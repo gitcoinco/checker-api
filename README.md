@@ -90,4 +90,8 @@ This repository contains a Next.js application configured to use TypeORM for dat
    ```
 
 7. **Access the API**:
-   The API endpoints can be accessed at `http://localhost:3000/api/pool`.
+  The API endpoints can be accessed at `http://localhost:3000/api/pool`.
+  Load up some dummy data using 
+  ```shell
+    INSERT INTO "pool"("chainId","roundId","strategy") VALUES('10','12','DirectGrants');
+  ```

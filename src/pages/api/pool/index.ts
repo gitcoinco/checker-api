@@ -7,6 +7,8 @@ export default async function handler(
 ) {
   const { method } = req;
 
+  console.log("method", method);
+
   switch (method) {
     case "POST": {
       const newPool = await PoolService.create(req.body);
@@ -14,6 +16,9 @@ export default async function handler(
     }
 
     case "GET": {
+      // return res.status(200).json({
+      //   message: "Pool created",
+      // });
       const pools = await PoolService.findAll();
       return res.status(200).json(pools);
     }
