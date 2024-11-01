@@ -6,13 +6,13 @@ export default function Home() {
     <div className={styles.page}>
       <main className={styles.main}>
         <h1>Checker API</h1>
-        <p>Status: <span style={{ color: 'green' }}>Online</span></p>
+        <p>
+          Status: <span style={{ color: "green" }}>Online</span>
+        </p>
         <p>Your backend API is running smoothly.</p>
       </main>
       <footer className={styles.footer}>
-        <p>
-          Built by Gitcoin
-        </p>
+        <p>Built by Gitcoin</p>
       </footer>
     </div>
   );

@@ -5,8 +5,8 @@ Sure! Here’s the README content formatted in Markdown (.md) format. You can co
 This repository contains a Next.js application configured to use TypeORM for database interactions with a PostgreSQL backend. The application is structured to provide a clean separation of concerns, making it easier to manage and maintain.
 
 ## Project Structure
-```
 
+```
 /src
 │
 ├── /app # Next.js application routes
@@ -76,11 +76,18 @@ This repository contains a Next.js application configured to use TypeORM for dat
   GRANT ALL PRIVILEGES ON DATABASE your_database_name TO your_database_username;
   ```
 
-4. **Run the Development Server**:
+5. **Handling Migration**
+
+- Make changes to the entity
+- Generate migration with `npm run generate --name=MigrationName`
+- Run migration with `npm run migrate`
+- If you need to revert last migration, `npm run revert`
+
+6. **Run the Development Server**:
 
    ```bash
    npm run dev
    ```
 
-5. **Access the API**:
+7. **Access the API**:
    The API endpoints can be accessed at `http://localhost:3000/api/pool`.

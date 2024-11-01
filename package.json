@@ -8,7 +8,13 @@
     "start": "next start",
     "lint": "next lint",
     "prepare": "husky install",
-    "prettier": "prettier --write ."
+    "prettier": "prettier --write .",
+    "generate": "typeorm-ts-node-commonjs -d src/data-source.ts migration:generate src/migration/$npm_config_name",
+    "generate:custom": "typeorm-ts-node-commonjs -d src/data-source.ts migration:create src/migration/$npm_config_name",
+    "migrate": "npx typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
+    "migrate:fake": "npx typeorm-ts-node-commonjs migration:run -d src/data-source.ts --fake",
+    "revert": "npx typeorm-ts-node-commonjs migration:revert -d src/data-source.ts",
+    "revert:fake": "npx typeorm-ts-node-commonjs migration:revert -d src/data-source.ts --fake"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
@@ -16,6 +22,7 @@
     "pg": "^8.13.1",
     "react": "19.0.0-rc-02c0e824-20241028",
     "react-dom": "19.0.0-rc-02c0e824-20241028",
+    "reflect-metadata": "^0.2.2",
     "typeorm": "^0.3.20"
   },
   "devDependencies": {
@@ -32,6 +39,7 @@
     "lint-staged": "^15.2.10",
     "prettier": "^3.3.3",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.6.3"
   },
   "lint-staged": {

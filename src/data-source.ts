@@ -1,11 +1,12 @@
+import "reflect-metadata";
 import { DataSource } from "typeorm";
 import dotenv from "dotenv";
 
 // Load environment variables from .env file
 dotenv.config();
 // Set default values for environment variables
-const synchronize = process.env.SYNCHRONIZE === "false";
-const logging = process.env.LOGGING === "false";
+const synchronize = Boolean(process.env.SYNCHRONIZE) || false;
+const logging = Boolean(process.env.LOGGING) || false;
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -14,11 +15,11 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  synchronize: synchronize, // Sync entities with the database (set to false in production)
+  synchronize: synchronize,
   logging: logging,
   entities: ["src/entity/**/*.ts"],
-  migrations: ["src/migration/**/*.ts"],
-  subscribers: ["src/subscriber/**/*.ts"],
+  migrations: ["src/migration/*.ts"],
+  subscribers: ["src/subscriber/*.ts"],
 });
 
 // Initialize the data source
