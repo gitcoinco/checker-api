@@ -1,6 +1,5 @@
 Sure! Here’s the README content formatted in Markdown (.md) format. You can copy and paste it directly into your README.md file.
 
-```markdown
 # Next.js + TypeORM + PostgreSQL API
 
 This repository contains a Next.js application configured to use TypeORM for database interactions with a PostgreSQL backend. The application is structured to provide a clean separation of concerns, making it easier to manage and maintain.
