@@ -4,8 +4,8 @@ import dotenv from "dotenv";
 // Load environment variables from .env file
 dotenv.config();
 // Set default values for environment variables
-const synchronize = process.env.SYNCHRONIZE === 'true';
-const logging = process.env.LOGGING === 'true';
+const synchronize = process.env.SYNCHRONIZE === "true";
+const logging = process.env.LOGGING === "true";
 
 export const AppDataSource = new DataSource({
   type: "postgres",

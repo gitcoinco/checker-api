@@ -6,36 +6,37 @@ Sure! Here’s the README content formatted in Markdown (.md) format. You can co
 This repository contains a Next.js application configured to use TypeORM for database interactions with a PostgreSQL backend. The application is structured to provide a clean separation of concerns, making it easier to manage and maintain.
 
 ## Project Structure
-
 ```
+
 /src
 │
-├── /app                    # Next.js application routes
-│   ├── /api                # API endpoints
-│   │   ├── /pool           # Pool API endpoints
-│   │   │   ├── index.ts    # Handles POST and GET requests for pools
-│   │   │   └── [id].ts     # Handles GET, PUT, DELETE requests for a specific pool
-│   │
-│   └── /page.tsx           # Main entry point for your application
+├── /app # Next.js application routes
+│ ├── /api # API endpoints
+│ │ ├── /pool # Pool API endpoints
+│ │ │ ├── index.ts # Handles POST and GET requests for pools
+│ │ │ └── [id].ts # Handles GET, PUT, DELETE requests for a specific pool
+│ │
+│ └── /page.tsx # Main entry point for your application
 │
-├── /data-source.ts         # TypeORM DataSource configuration
+├── /data-source.ts # TypeORM DataSource configuration
 │
-├── /entities               # TypeORM entities
-│   └── Pool.ts             # Pool entity definition
+├── /entities # TypeORM entities
+│ └── Pool.ts # Pool entity definition
 │
-├── /repositories            # Data access layer
-│   └── PoolRepository.ts    # Repository for interacting with Pool entity
+├── /repositories # Data access layer
+│ └── PoolRepository.ts # Repository for interacting with Pool entity
 │
-├── /services               # Business logic layer
-│   └── PoolService.ts      # Service for managing pool operations
+├── /services # Business logic layer
+│ └── PoolService.ts # Service for managing pool operations
 │
-├── /styles                 # CSS styles (if applicable)
-│   └── page.module.css     # Styles for the main page
-```
+├── /styles # CSS styles (if applicable)
+│ └── page.module.css # Styles for the main page
+
+````
 
 ## Overview of Key Components
 
-- **Entities**: 
+- **Entities**:
   - Located in the `/entities` directory, entities represent the data models in the database. For example, `Pool.ts` defines the structure of the `Pool` entity.
 
 - **Repositories**:
@@ -57,21 +58,27 @@ This repository contains a Next.js application configured to use TypeORM for dat
 1. **Install Dependencies**:
    ```bash
    npm install
-   ```
+````
+2. Install Hooks
+```bash
+   npm run prepare
+```
 
-2. **Configure Environment Variables**:
+3. **Configure Environment Variables**:
    Create a `.env` file in the root of the project and set the necessary environment variables for database connection.
 
-3. **Setting up your databas**:
+4. **Setting up your databas**:
+
 - Connect as admin `psql -U your_admin_username -h your_database_host -p your_database_port`
 - In `psql` shell, run
-    ```shell
-    CREATE DATABASE your_database_name;
-    CREATE ROLE your_database_username WITH LOGIN PASSWORD 'your_database_password';
-    GRANT ALL PRIVILEGES ON DATABASE your_database_name TO your_database_username;
-    ```
+  ```shell
+  CREATE DATABASE your_database_name;
+  CREATE ROLE your_database_username WITH LOGIN PASSWORD 'your_database_password';
+  GRANT ALL PRIVILEGES ON DATABASE your_database_name TO your_database_username;
+  ```
 
 4. **Run the Development Server**:
+
    ```bash
    npm run dev
    ```

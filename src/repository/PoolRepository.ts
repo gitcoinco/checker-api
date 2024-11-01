@@ -1,5 +1,5 @@
 import { AppDataSource } from "@/datasource";
-import { Pool } from "@/entity/Pool"
+import { Pool } from "@/entity/Pool";
 
 const poolRepository = AppDataSource.getRepository(Pool);
 
