@@ -136,10 +136,6 @@ a.secondary {
     align-items: center;
   }
 
-  .main ol {
-    text-align: center;
-  }
-
   .ctas {
     flex-direction: column;
   }
