@@ -70,6 +70,7 @@ This repository contains a Next.js application configured to use TypeORM for dat
 
 - Connect as admin `psql -U your_admin_username -h your_database_host -p your_database_port`
 - In `psql` shell, run
+  
   ```shell
   CREATE DATABASE your_database_name;
   CREATE ROLE your_database_username WITH LOGIN PASSWORD 'your_database_password';
@@ -91,7 +92,8 @@ This repository contains a Next.js application configured to use TypeORM for dat
 
 7. **Access the API**:
   The API endpoints can be accessed at `http://localhost:3000/api/pool`.
-  Load up some dummy data using 
+  Load up some dummy data using
+
   ```shell
-      INSERT INTO "pool"("chainId","roundId","strategy") VALUES('10','12','DirectGrants');
+  INSERT INTO "pool"("chainId","roundId","strategy") VALUES('10','12','DirectGrants');
   ```
