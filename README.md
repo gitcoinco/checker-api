@@ -31,7 +31,7 @@ This repository contains a Next.js application configured to use TypeORM for dat
 ├── /styles # CSS styles (if applicable)
 │ └── page.module.css # Styles for the main page
 
-````
+```
 
 ## Overview of Key Components
 
@@ -57,11 +57,11 @@ This repository contains a Next.js application configured to use TypeORM for dat
 1. **Install Dependencies**:
    ```bash
    npm install
-````
+   ```
 2. Install Hooks
-```bash
+   ```bash
    npm run prepare
-```
+   ```
 
 3. **Configure Environment Variables**:
    Create a `.env` file in the root of the project and set the necessary environment variables for database connection.
@@ -93,5 +93,5 @@ This repository contains a Next.js application configured to use TypeORM for dat
   The API endpoints can be accessed at `http://localhost:3000/api/pool`.
   Load up some dummy data using 
   ```shell
-    INSERT INTO "pool"("chainId","roundId","strategy") VALUES('10','12','DirectGrants');
+      INSERT INTO "pool"("chainId","roundId","strategy") VALUES('10','12','DirectGrants');
   ```
