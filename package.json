@@ -5,7 +5,9 @@
   "type": "commonjs",
   "devDependencies": {
     "@types/node": "^16.18.119",
-    "ts-node": "^10.9.1",
+    "nodemon": "^3.1.7",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^4.9.5"
   },
@@ -25,13 +27,15 @@
     "typeorm": "^0.3.20"
   },
   "scripts": {
-    "watch": "tsc -w",
-    "dev": "nodemon build/index.js",
-    "start:dev": "concurrently \"tsc -w\" \"nodemon build/index.js\"",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
     "start": "ts-node src/index.ts",
     "typeorm": "typeorm-ts-node-commonjs",
-    "migrate": " npm run typeorm migration:run -- -d ./src/data-source.ts",
-    "generate": "npm run typeorm migration:generate -- -d ./src/data-source.ts src/migration/$npm_config_name"
+    "generate": "npm run typeorm migration:generate -- -d src/data-source.ts src/migration/$npm_config_name",
+    "generate:custom": "npm run typeorm migration:create -- -d src/data-source.ts src/migration/$npm_config_name",
+    "migrate": "npm run typeorm migration:run -- -d src/data-source.ts",
+    "migrate:fake": "npm run typeorm migration:run -- -d src/data-source.ts --fake",
+    "revert": "npm run typeorm migration:revert --  -d src/data-source.ts",
+    "revert:fake": "npm run typeorm migration:revert -- -d src/data-source.ts --fake"
   }
 }

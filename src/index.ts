@@ -24,7 +24,7 @@ app.listen(3000, () => {
 app.post("/pool", async (req, res) => {
   const entityManager: EntityManager = AppDataSource.manager;
   const pool = new Pool();
-  pool.chainId = "11155111";
+  pool.chainId = "111551111";
   pool.roundId = Math.floor(Math.random() * 100).toString();
   pool.strategy = "Strategy";
   await entityManager.save(pool);
