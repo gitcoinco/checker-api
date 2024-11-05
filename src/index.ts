@@ -1,13 +1,13 @@
 import express from 'express';
 import { AppDataSource } from './data-source';
-import { EntityManager } from 'typeorm';
+import { type EntityManager } from 'typeorm';
 import { Pool } from './entity/Pool';
 
 const app = express();
 
 AppDataSource.initialize()
   .then(() => {
-    console.log('Connected to database');
+    console.log('Connected to database!');
   })
   .catch(error => {
     console.log('Error connecting to database:', error);
