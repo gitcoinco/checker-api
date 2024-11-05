@@ -11,6 +11,8 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-promise": "^6.6.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
     "nodemon": "^3.1.7",
     "prettier": "3.3.3",
     "ts-node": "^10.9.2",
@@ -45,6 +47,11 @@
     "migrate": "npm run typeorm migration:run -- -d src/data-source.ts",
     "migrate:fake": "npm run typeorm migration:run -- -d src/data-source.ts --fake",
     "revert": "npm run typeorm migration:revert --  -d src/data-source.ts",
-    "revert:fake": "npm run typeorm migration:revert -- -d src/data-source.ts --fake"
+    "revert:fake": "npm run typeorm migration:revert -- -d src/data-source.ts --fake",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "*.js": "eslint --cache --fix",
+    "*.--write": "prettier --write"
   }
 }
