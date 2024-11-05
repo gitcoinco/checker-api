@@ -1,5 +1,3 @@
-
-
 ## Getting Started
 
 1. **Install Dependencies**:
@@ -7,6 +5,7 @@
    npm install
    ```
 2. Install Hooks
+
    ```bash
    npm run prepare
    ```
@@ -39,9 +38,9 @@
    ```
 
 7. **Access the API**:
-  The API endpoints can be accessed at `http://localhost:3000/api/pool`.
-  Load up some dummy data using
+   The API endpoints can be accessed at `http://localhost:3000/api/pool`.
+   Load up some dummy data using
 
-     ```shell
-     INSERT INTO "pool"("chainId","roundId","strategy") VALUES('10','12','DirectGrants');
-     ```
+   ```shell
+   INSERT INTO "pool"("chainId","roundId","strategy") VALUES('10','12','DirectGrants');
+   ```
