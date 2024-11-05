@@ -1,7 +1,7 @@
 {
-  "name": ".",
+  "name": "checker-api",
   "version": "0.0.1",
-  "description": "Awesome project developed with TypeORM.",
+  "description": "backend server for gitcoin checker",
   "type": "commonjs",
   "devDependencies": {
     "@types/node": "^16.18.119",
