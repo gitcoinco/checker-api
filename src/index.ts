@@ -31,7 +31,7 @@ AppDataSource.initialize()
     logger.error('Error connecting to database:', { error });
   });
 
-const port = Number(process.env.PORT) ?? 3000;
+const port = Number(process.env.PORT ?? 3000);
 
 app.listen(port, () => {
   logger.info(`Server is running on port ${port}`);
