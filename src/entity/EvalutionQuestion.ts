@@ -1,5 +1,5 @@
 import { PrimaryGeneratedColumn, Column, Entity, ManyToOne } from 'typeorm';
-import { Pool } from './Pool';
+import { Pool } from '@/entity/Pool';
 
 @Entity()
 export class EvaluationQuestion {

@@ -5,9 +5,9 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
-import { Profile } from './Profile';
-import { Pool } from './Pool';
-import { Evaluation } from './Evaluation';
+import { Profile } from '@/entity/Profile';
+import { Pool } from '@/entity/Pool';
+import { Evaluation } from '@/entity/Evaluation';
 
 @Entity()
 export class Application {

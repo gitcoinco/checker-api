@@ -5,8 +5,8 @@ import {
   OneToOne,
   OneToMany,
 } from 'typeorm';
-import { EvaluationQuestion } from './EvalutionQuestion';
-import { Evaluation } from './Evaluation';
+import { EvaluationQuestion } from '@/entity/EvalutionQuestion';
+import { Evaluation } from '@/entity/Evaluation';
 
 export enum AnswerType {
   YES = 'yes',
