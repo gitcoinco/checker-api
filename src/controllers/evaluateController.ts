@@ -2,6 +2,8 @@ import type { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { createLogger } from '@/logger';
 import { indexer } from '@/ext/indexer';
+import { requestEvaluation } from '@/ext/openai';
+import e from 'express';
 
 const logger = createLogger('evaluateController.ts');
 
@@ -36,9 +38,12 @@ export const evaluateApplication = async (
       logger.info(
         `Successfully fetched application with ID: ${application.id}`
       );
+
+      const evaluationResult = await requestEvaluation(application);
+
       res.status(200).json({
-        message: 'Successfully fetched application',
-        data: application,
+        message: 'Successfully evaluated application',
+        data: evaluationResult,
       });
     } else {
       logger.info(`No application found for ID: ${applicationId}`);
@@ -48,9 +53,9 @@ export const evaluateApplication = async (
       });
     }
   } catch (error) {
-    logger.error('Error fetching application', { error });
+    logger.error('Error evaluating application', { error });
     res.status(500).json({
-      message: 'Error fetching application',
+      message: 'Error evaluating application',
       error: error.message,
     });
   }
