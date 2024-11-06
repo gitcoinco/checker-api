@@ -1,6 +1,6 @@
 import { PrimaryGeneratedColumn, Column, Entity, OneToMany } from 'typeorm';
-import { EvaluationQuestion } from './EvalutionQuestion';
-import { Application } from './Application';
+import { EvaluationQuestion } from '@/entity/EvalutionQuestion';
+import { Application } from '@/entity/Application';
 
 @Entity()
 export class Pool {
@@ -8,7 +8,7 @@ export class Pool {
   id: number;
 
   @Column()
-  chainId: string;
+  chainId: number;
 
   @Column()
   poolId: string;
