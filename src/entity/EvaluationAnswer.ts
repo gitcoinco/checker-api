@@ -2,8 +2,9 @@ import {
   PrimaryGeneratedColumn,
   Column,
   Entity,
-  OneToOne,
   OneToMany,
+  Unique,
+  ManyToOne,
 } from 'typeorm';
 import { EvaluationQuestion } from '@/entity/EvalutionQuestion';
 import { Evaluation } from '@/entity/Evaluation';
@@ -15,6 +16,7 @@ export enum AnswerType {
 }
 
 @Entity()
+@Unique(['evaluationId', 'evaluationQuestionId'])
 export class EvaluationAnswer {
   @PrimaryGeneratedColumn()
   id: number;
@@ -25,9 +27,18 @@ export class EvaluationAnswer {
   })
   answer: AnswerType;
 
-  @OneToMany(() => Evaluation, evaluation => evaluation)
+  @OneToMany(() => Evaluation, evaluation => evaluation.evaluationAnswer)
   evaluation: Evaluation;
 
-  @OneToOne(() => EvaluationQuestion, question => question)
-  question: EvaluationQuestion;
+  @ManyToOne(
+    () => EvaluationQuestion,
+    evaluationQuestion => evaluationQuestion.answers
+  )
+  evaluationQuestion: EvaluationQuestion;
+
+  @Column() // Explicitly define the foreign key column for evaluation
+  evaluationId: number;
+
+  @Column() // Explicitly define the foreign key column for question
+  evaluationQuestionId: number;
 }

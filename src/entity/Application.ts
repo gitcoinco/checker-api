@@ -4,24 +4,23 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  Unique,
 } from 'typeorm';
 import { Profile } from '@/entity/Profile';
 import { Pool } from '@/entity/Pool';
 import { Evaluation } from '@/entity/Evaluation';
 
 @Entity()
+@Unique(['applicationId', 'poolId', 'chainId'])
 export class Application {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  applicationId: string;
+  chainId: number;
 
   @Column()
-  metadata: string;
-
-  // should we also store poolId ?
-  // should we also store profileId ?
+  applicationId: string;
 
   @ManyToOne(() => Pool, pool => pool.applications)
   pool: Pool;
@@ -31,6 +30,7 @@ export class Application {
 
   @OneToMany(() => Evaluation, evaluation => evaluation.application)
   evaluations: Evaluation[];
-}
 
-// should we store on-chain status ?
+  @Column() // Explicitly define the foreign key column for pool
+  poolId: number;
+}
