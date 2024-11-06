@@ -1,6 +1,7 @@
 import express from 'express';
 import { AppDataSource } from '@/data-source';
 import poolService from './service/PoolService';
+import { catchError } from './utils';
 
 const app = express();
 
@@ -21,6 +22,26 @@ app.listen(3000, () => {
 });
 
 app.post('/test-pool', async (req, res) => {
-  await poolService.createTestPool();
-  res.send('Pool saved');
+  const [error, pool] = await catchError(poolService.createTestPool());
+
+  if (error !== undefined) {
+    res.status(500).json({ message: 'Failed to create pool' });
+  }
+
+  res.json({
+    message: 'Pool Created',
+    pool,
+  });
+});
+
+app.get('/pools', async (req, res) => {
+  const [error, pools] = await catchError(poolService.getAllPools());
+
+  if (error !== undefined) {
+    res.status(500).json({ message: 'Failed to fetch pool' });
+  }
+
+  res.json({
+    pools,
+  });
 });

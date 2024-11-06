@@ -19,9 +19,9 @@ class PoolService {
   //   return await poolRepository.findOne(id);
   // }
 
-  // async getAllPools(): Promise<Pool[]> {
-  //   return await poolRepository.find();
-  // }
+  async getAllPools(): Promise<Pool[]> {
+    return await poolRepository.find();
+  }
 
   // async updatePool(pool: Pool): Promise<Pool> {
   //   return await poolRepository.save(pool);
