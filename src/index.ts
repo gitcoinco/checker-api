@@ -4,6 +4,10 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerOptions from '@/swagger';
 import { AppDataSource } from '@/data-source';
 import routes from '@/routes';
+import dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
 
 const app = express();
 
@@ -23,7 +27,11 @@ AppDataSource.initialize()
     console.log('Error connecting to database:', error);
   });
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
-  console.log('API documentation available at http://localhost:3000/api-docs');
+const port = Number(process.env.PORT) ?? 3000;
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+  console.log(
+    `API documentation available at http://localhost:${port}/api-docs`
+  );
 });
