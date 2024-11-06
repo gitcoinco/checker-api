@@ -3,9 +3,9 @@ import { validationResult } from 'express-validator';
 import { createLogger } from '@/logger';
 import { indexer } from '@/ext/indexer';
 
-const logger = createLogger('reviewController.ts');
+const logger = createLogger('evaluateController.ts');
 
-export const reviewApplication = async (
+export const evaluateApplication = async (
   req: Request,
   res: Response
 ): Promise<void> => {
@@ -22,12 +22,12 @@ export const reviewApplication = async (
   const { chainId, poolId, applicationId } = req.params;
 
   logger.info(
-    `Received review request for chainId: ${chainId}, poolId: ${poolId}, applicationId: ${applicationId}`
+    `Received evaluate request for chainId: ${chainId}, poolId: ${poolId}, applicationId: ${applicationId}`
   );
 
   try {
     const application = await indexer.getApplication({
-      roundId: poolId, // Assuming poolId is the roundId here
+      roundId: poolId,
       chainId: parseInt(chainId, 10),
       applicationId,
     });

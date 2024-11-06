@@ -1,26 +1,26 @@
-import { reviewApplication } from '@/controllers/reviewController';
+import { evaluateApplication } from '@/controllers/evaluateController';
 import { Router } from 'express';
 
 const router = Router();
 
 /**
  * @swagger
- * /review/:
+ * /evaluate/:
  *   get:
  *     summary: Welcome API
  *     responses:
  *       200:
- *         description: Welcome to the Review API
+ *         description: Welcome to the Evaluate API
  */
 router.get('/', (req, res) => {
   res.json({
-    message: 'Welcome to the Review API',
+    message: 'Welcome to the Evaluate API',
   });
 });
 
 /**
  * @swagger
- * /review/{chainId}/{poolId}/{applicationId}:
+ * /evaluate/{chainId}/{poolId}/{applicationId}:
  *   get:
  *     summary: Logs the input parameters (chainId, poolId, applicationId)
  *     parameters:
@@ -49,6 +49,6 @@ router.get('/', (req, res) => {
  *       200:
  *         description: Successfully logged the input parameters
  */
-router.get('/:chainId/:poolId/:applicationId', reviewApplication);
+router.get('/:chainId/:poolId/:applicationId', evaluateApplication);
 
 export default router;
