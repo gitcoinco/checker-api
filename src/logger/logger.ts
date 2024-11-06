@@ -11,7 +11,10 @@ const customFormat = (prefix: string): ReturnType<typeof printf> =>
 const createCustomLogger = (prefix: string): Logger => {
   return createLogger({
     level: 'info',
-    format: combine(timestamp(), customFormat(prefix)),
+    format: combine(
+      timestamp({ format: customTimestampFormat }),
+      customFormat(prefix)
+    ),
     transports: [
       new transports.Console({
         format: combine(
