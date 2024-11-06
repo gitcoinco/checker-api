@@ -1,7 +1,6 @@
 import express from 'express';
-import { AppDataSource } from './data-source';
-import { type EntityManager } from 'typeorm';
-import { Pool } from './entity/Pool';
+import { AppDataSource } from '@/data-source';
+import poolService from './service/PoolService';
 
 const app = express();
 
@@ -21,12 +20,7 @@ app.listen(3000, () => {
   console.log('Server is listening on port 3000');
 });
 
-app.post('/pool', async (req, res) => {
-  const entityManager: EntityManager = AppDataSource.manager;
-  const pool = new Pool();
-  pool.chainId = '111551111';
-  pool.roundId = Math.floor(Math.random() * 100).toString();
-  pool.strategy = 'Strategy';
-  await entityManager.save(pool);
+app.post('/test-pool', async (req, res) => {
+  await poolService.createTestPool();
   res.send('Pool saved');
 });

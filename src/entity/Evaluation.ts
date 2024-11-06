@@ -5,8 +5,8 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
-import { Application } from './Application';
-import { EvaluationAnswer } from './EvaluationAnswer';
+import { Application } from '@/entity/Application';
+import { EvaluationAnswer } from '@/entity/EvaluationAnswer';
 
 export enum EVALUATOR_TYPE {
   HUMAN = 'human',

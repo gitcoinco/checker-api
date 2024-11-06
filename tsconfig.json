@@ -13,6 +13,9 @@
     "typeRoots": ["./node_modules/@types"],
     "strict": false,
     "strictNullChecks": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
   },
   "exclude": ["node_modules"]
 }
