@@ -8,12 +8,14 @@
 ├── package-lock.json           # Dependency lock file
 ├── package.json                # Project metadata and dependencies
 ├── src                         # Source code for the application
-│   ├── data-source.ts          # Database connection setup and configuration
 │   ├── entity                  # TypeORM entities, defining database schemas and relations
-│   ├── index.ts                # Application entry point
 │   ├── migration               # Database migrations for schema changes
 │   ├── repository              # Repositories for data access logic
+│   ├── routes                  # API routes
 │   ├── service                 # Business logic and service functions
+│   ├── data-source.ts          # Database connection setup and configuration
+│   ├── index.ts                # Application entry point
+│   └── swagger.ts              # Optional: Swagger setup in TypeScript
 │   └── utils.ts                # Utility functions and helper methods
 └── tsconfig.json               # TypeScript configuration
 ```
@@ -45,5 +47,8 @@
    npm run dev
    ```
 6. **Testing the setup**:
-  - Create a test pool with `curl -X POST http://localhost:3000/test-pool`
-  - Retrieved the created pool with `curl -X GET http://localhost:3000/pools`
+  - Create a test pool with `curl -X POST http://localhost:3000/api/pools/create-test`
+  - Retrieved the created pool with `curl -X GET http://localhost:3000/api/pools`
+
+7. **API Overview**
+  - Visit `http://localhost:3000/api-docs`

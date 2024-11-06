@@ -1,9 +1,19 @@
 import express from 'express';
+import swaggerJsDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+import swaggerOptions from '@/swagger';
 import { AppDataSource } from '@/data-source';
-import poolService from './service/PoolService';
-import { catchError } from './utils';
+import routes from '@/routes';
 
 const app = express();
+
+// Swagger setup
+const specs = swaggerJsDoc(swaggerOptions);
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
+app.use(express.json());
+app.use('/api', routes);
 
 AppDataSource.initialize()
   .then(() => {
@@ -13,35 +23,7 @@ AppDataSource.initialize()
     console.log('Error connecting to database:', error);
   });
 
-app.get('/', (req, res) => {
-  res.send('Hello, world!');
-});
-
 app.listen(3000, () => {
-  console.log('Server is listening on port 3000');
-});
-
-app.post('/test-pool', async (req, res) => {
-  const [error, pool] = await catchError(poolService.createTestPool());
-
-  if (error !== undefined) {
-    res.status(500).json({ message: 'Failed to create pool' });
-  }
-
-  res.json({
-    message: 'Pool Created',
-    pool,
-  });
-});
-
-app.get('/pools', async (req, res) => {
-  const [error, pools] = await catchError(poolService.getAllPools());
-
-  if (error !== undefined) {
-    res.status(500).json({ message: 'Failed to fetch pool' });
-  }
-
-  res.json({
-    pools,
-  });
+  console.log('Server is running on port 3000');
+  console.log('API documentation available at http://localhost:3000/api-docs');
 });
