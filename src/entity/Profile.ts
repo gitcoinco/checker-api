@@ -12,7 +12,7 @@ export class Profile {
   @OneToMany(() => Application, application => application.profile)
   applications: Application[];
 
-  // profile type : round creator / evaluateer / application
+  // profile type : round creator / reviewer / application
 }
 
 // Do we need this Entity ? This is useful when we want to group all application of a profile
