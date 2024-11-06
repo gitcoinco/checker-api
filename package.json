@@ -52,7 +52,7 @@
     "migrate:fake": "npm run typeorm -- migration:run -d src/data-source.ts --fake",
     "revert": "npm run typeorm -- migration:revert -d src/data-source.ts",
     "revert:fake": "npm run typeorm -- migration:revert -d src/data-source.ts --fake",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "lint-staged": {
     "*.ts": [
