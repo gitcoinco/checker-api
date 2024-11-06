@@ -10,7 +10,6 @@ export class EvaluationQuestion {
   question: string;
 
   @ManyToOne(() => Pool, pool => pool.questions, {
-    nullable: true,
     onDelete: 'CASCADE',
   })
   pool: Pool;
