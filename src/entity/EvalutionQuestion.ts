@@ -9,6 +9,8 @@ export class EvaluationQuestion {
   @Column()
   question: string;
 
-  @ManyToOne(() => Pool, pool => pool.questions)
-  pool: number;
+  @ManyToOne(() => Pool, pool => pool.questions, {
+    onDelete: 'CASCADE',
+  })
+  pool: Pool;
 }

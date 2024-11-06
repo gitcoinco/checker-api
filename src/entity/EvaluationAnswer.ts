@@ -25,9 +25,9 @@ export class EvaluationAnswer {
   })
   answer: AnswerType;
 
-  @OneToMany(() => Evaluation, evaluation => evaluation.id)
+  @OneToMany(() => Evaluation, evaluation => evaluation)
   evaluation: Evaluation;
 
-  @OneToOne(() => EvaluationQuestion, question => question.id)
+  @OneToOne(() => EvaluationQuestion, question => question)
   question: EvaluationQuestion;
 }
