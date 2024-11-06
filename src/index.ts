@@ -5,7 +5,7 @@ import swaggerOptions from '@/swagger';
 import { AppDataSource } from '@/data-source';
 import routes from '@/routes';
 import dotenv from 'dotenv';
-import { createLogger } from '@/logger/logger';
+import { createLogger } from '@/logger';
 
 dotenv.config();
 

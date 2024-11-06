@@ -10,7 +10,7 @@ This project uses a custom logger based on the `winston` library to handle loggi
 To create a custom logger, use the `createLogger` function, providing a prefix that identifies the source of the log messages.
 
 ```ts
-import { createLogger } from '@/config/logger';
+import { createLogger } from '@/logger';
 
 const logger = createLogger('exampleModule.ts');
 

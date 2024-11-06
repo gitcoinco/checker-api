@@ -1,4 +1,4 @@
-import { createLogger } from '@/logger/logger';
+import { createLogger } from '@/logger';
 import poolService from '@/service/PoolService';
 import { catchError } from '@/utils';
 import { Router } from 'express';
