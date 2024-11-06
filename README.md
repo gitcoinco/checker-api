@@ -8,6 +8,7 @@
 ├── package-lock.json           # Dependency lock file
 ├── package.json                # Project metadata and dependencies
 ├── src                         # Source code for the application
+│   ├── controller              # Routing controller logic
 │   ├── entity                  # TypeORM entities, defining database schemas and relations
 │   ├── migration               # Database migrations for schema changes
 │   ├── repository              # Repositories for data access logic
