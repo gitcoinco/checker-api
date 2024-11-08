@@ -64,10 +64,6 @@
 ```
 Pools
 ------
-GET : /pools (get all pools)
-  - ?manager="0x.." (filter by manager)
-  - ?review-active  (is in review period)
-
 GET : /pools/:chainId/:poolId (get pool by id)
 GET : /pools/:chainId/:poolId/applications (get all application of a pool)
 GET : /pools/:chainId/:poolId/application/:applicationId (get specfic applications)
@@ -78,9 +74,20 @@ GET : /pools/:chainId/:poolId/application/:applicationId/evaluations/:evaluator 
 POST: /pool/:chainId/:poolId/application/:applicationId/evaluate (save evaluation)
 POST: /pool/:chainId/:poolId/application/:applicationId/evaluate-llm (trigger llm evaluation)
 POST: /pool/:chainId/:poolId/evaluation-questions (save questions needed for evaluation)
-POST: /pool/:chainId/:poolId/application/:applicationId/review (notify backend that on-chain review is done)
+
 
 Profile 
 -------
 GET: /profile/:profileId/applications ( get all applications by profile)
+
+=================
+NICE TO HAVE
+=================
+Pools
+------
+GET : /pools (get all pools)
+  - ?manager="0x.." (filter by manager)
+  - ?review-active  (is in review period)
+
+POST  : /pool/:chainId/:poolId/application/:applicationId/review (notify backend that on-chain review is done)
 ```
