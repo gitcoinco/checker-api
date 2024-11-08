@@ -10,6 +10,7 @@
 ├── src                         # Source code for the application
 │   ├── controller              # Routing controller logic
 │   ├── entity                  # TypeORM entities, defining database schemas and relations
+│   ├── ext                     # External API integrations
 │   ├── migration               # Database migrations for schema changes
 │   ├── repository              # Repositories for data access logic
 │   ├── routes                  # API routes
@@ -53,3 +54,9 @@
 
 7. **API Overview**
   - Visit `http://localhost:3000/api-docs`
+
+**Helpers**
+
+- For [Logging.md](./src//logger/logger.md) to understand use winston for logging
+- For Try catch handling done via [catchError](./src/utils.ts)
+- All routes are documented using [swagger](./src/swagger.ts)
