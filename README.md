@@ -55,7 +55,7 @@
 7. **API Overview**
   - Visit `http://localhost:3000/api-docs`
 
-**Helpers**
+**Note**
 
 - For [Logging.md](./src//logger/logger.md) to understand use winston for logging
 - For Try catch handling done via [catchError](./src/utils.ts)

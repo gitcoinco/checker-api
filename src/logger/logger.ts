@@ -1,3 +1,4 @@
+import { basename } from 'path';
 import { createLogger, format, type Logger, transports } from 'winston';
 const { combine, timestamp, printf, colorize } = format;
 
@@ -8,19 +9,21 @@ const customFormat = (prefix: string): ReturnType<typeof printf> =>
     return `${timestamp} [${level}] [${prefix}]: ${message}`;
   });
 
-const createCustomLogger = (prefix: string): Logger => {
+const createCustomLogger = (prefix?: string): Logger => {
+  const loggerPrefix = prefix ?? basename(__filename, '.ts');
+
   return createLogger({
     level: 'info',
     format: combine(
       timestamp({ format: customTimestampFormat }),
-      customFormat(prefix)
+      customFormat(loggerPrefix)
     ),
     transports: [
       new transports.Console({
         format: combine(
           colorize(),
           timestamp({ format: customTimestampFormat }),
-          customFormat(prefix)
+          customFormat(loggerPrefix)
         ),
       }),
       new transports.File({ filename: 'logs/error.log', level: 'error' }),

@@ -5,21 +5,6 @@ const router = Router();
 
 /**
  * @swagger
- * /evaluate/:
- *   get:
- *     summary: Welcome API
- *     responses:
- *       200:
- *         description: Welcome to the Evaluate API
- */
-router.get('/', (req, res) => {
-  res.json({
-    message: 'Welcome to the Evaluate API',
-  });
-});
-
-/**
- * @swagger
  * /evaluate/{chainId}/{poolId}/{applicationId}:
  *   get:
  *     summary: Logs the input parameters (chainId, poolId, applicationId)

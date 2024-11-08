@@ -1,25 +1,16 @@
 import type { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 import { createLogger } from '@/logger';
 import { indexer } from '@/ext/indexer';
 import { requestEvaluation } from '@/ext/openai';
-import e from 'express';
+import { validateRequest } from '@/utils';
 
-const logger = createLogger('evaluateController.ts');
+const logger = createLogger();
 
 export const evaluateApplication = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    logger.error('Validation failed', { errors: errors.array() });
-    res.status(400).json({
-      message: 'Validation failed',
-      errors: errors.array(),
-    });
-  }
+  validateRequest(req, res);
 
   const { chainId, poolId, applicationId } = req.params;
 
