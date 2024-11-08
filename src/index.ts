@@ -10,7 +10,7 @@ import { createLogger } from '@/logger';
 dotenv.config();
 
 const app = express();
-const logger = createLogger('index.ts');
+const logger = createLogger();
 
 // Swagger setup
 const specs = swaggerJsDoc(swaggerOptions);

@@ -7,7 +7,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const logger = createLogger('openai.ts');
+const logger = createLogger();
 
 export const requestEvaluation = async (
   application: Application
