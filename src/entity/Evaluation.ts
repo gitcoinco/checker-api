@@ -22,7 +22,7 @@ export class Evaluation {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 40 })
+  @Column({ length: 42 })
   evaluator: string;
 
   @Column({

@@ -12,12 +12,13 @@
 │   ├── entity                  # TypeORM entities, defining database schemas and relations
 │   ├── ext                     # External API integrations
 │   ├── migration               # Database migrations for schema changes
-│   ├── repository              # Repositories for data access logic
 │   ├── routes                  # API routes
 │   ├── service                 # Business logic and service functions
 │   ├── data-source.ts          # Database connection setup and configuration
 │   ├── index.ts                # Application entry point
-│   └── swagger.ts              # Optional: Swagger setup in TypeScript
+│   ├── postgraphile.config.ts  # Postgraphile configuration
+│   ├── repository.ts           # Repositories for data access logic
+│   ├── swagger.ts              # Optional: Swagger setup in TypeScript
 │   └── utils.ts                # Utility functions and helper methods
 └── tsconfig.json               # TypeScript configuration
 ```
@@ -48,11 +49,7 @@
    ```bash
    npm run dev
    ```
-6. **Testing the setup**:
-  - Create a test pool with `curl -X POST http://localhost:3000/api/pools/create-test`
-  - Retrieved the created pool with `curl -X GET http://localhost:3000/api/pools`
-
-7. **API Overview**
+6. **API Overview**
   - Visit `http://localhost:3000/api-docs`
 
 **Note**
@@ -60,3 +57,24 @@
 - For [Logging.md](./src//logger/logger.md) to understand use winston for logging
 - For Try catch handling done via [catchError](./src/utils.ts)
 - All routes are documented using [swagger](./src/swagger.ts)
+- Postgraphile endpoint is hosted at `http://localhost:3000/graphiql`
+
+```
+Evaluations
+------
+
+router.post('/evaluations/manual-evaluation', createManualEvaluation)
+router.post('/evaluations/trigger-llm-evaluation', triggerLLMEvaluation)
+
+router.post('/evaluation-questions', createEvaluationQuestions);
+
+router.post('/pools', createPools);
+
+router.post('/pools/:poolId/applications', createApplication);
+
+
+# Nice to have
+router.post('/pools/auto', autoCreatePools);
+router.post('/pools/:poolId/applications/auto', autoCreateApplication);
+POST: /pools/:chainId/pools/:poolId/applications/:applicationId/review
+```

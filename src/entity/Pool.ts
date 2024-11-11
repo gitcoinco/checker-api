@@ -5,7 +5,7 @@ import {
   OneToMany,
   Unique,
 } from 'typeorm';
-import { EvaluationQuestion } from '@/entity/EvalutionQuestion';
+import { EvaluationQuestion } from '@/entity/EvaluationQuestion';
 import { Application } from '@/entity/Application';
 
 @Entity()

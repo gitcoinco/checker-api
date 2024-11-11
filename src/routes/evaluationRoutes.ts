@@ -1,11 +1,11 @@
-import { evaluateApplication } from '@/controllers/evaluateController';
+import { evaluateApplication } from '@/controllers/evaluationController';
 import { Router } from 'express';
 
 const router = Router();
 
 /**
  * @swagger
- * /evaluate/{chainId}/{poolId}/{applicationId}:
+ * /evaluations/{chainId}/{poolId}/{applicationId}:
  *   get:
  *     summary: Logs the input parameters (chainId, poolId, applicationId)
  *     parameters:
@@ -34,6 +34,10 @@ const router = Router();
  *       200:
  *         description: Successfully logged the input parameters
  */
-router.get('/:chainId/:poolId/:applicationId', evaluateApplication);
+router.get('/:chainId/:poolId/:applicationId/evaluate', evaluateApplication);
+
+// router.post('/:chainId/:poolId/:applicationId/llm-evaluate', llmEvaluateApplication);
+
+// router.post('/:chainId/:poolId/questions/add', addEvaluationQuestions);
 
 export default router;

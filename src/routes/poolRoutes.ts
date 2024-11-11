@@ -1,9 +1,4 @@
-import {
-  createTestPool,
-  getAllPools,
-  getPoolById,
-  getPoolByPoolIdAndChainId,
-} from '@/controllers/poolController';
+import { createPool } from '@/controllers/poolController';
 import { Router } from 'express';
 
 const router = Router();
@@ -11,73 +6,39 @@ const router = Router();
 /**
  * @swagger
  * /pools:
- *   get:
- *     summary: Retrieves all pools
- *     responses:
- *       200:
- *         description: A list of pools
- */
-router.get('/', getAllPools);
-
-/**
- * @swagger
- * /pools/{id}:
- *   get:
- *     summary: Retrieves a pool by ID
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: The ID of the pool
- *         schema:
- *           type: string
- *         example: 1
- *     responses:
- *       200:
- *         description: A pool object
- *       404:
- *         description: Pool not found
- */
-router.get('/:id', getPoolById);
-
-/**
- * /pools/{chainId}/{poolId}:
- *   get:
- *     summary: Retrieves a pool by chainId and poolId
- *     parameters:
- *       - in: path
- *         name: chainId
- *         required: true
- *         description: The chainId of the pool
- *         schema:
- *           type: string
- *           example: "1"
- *       - in: path
- *         name: poolId
- *         required: true
- *         description: The poolId of the pool
- *         schema:
- *           type: string
- *           example: "1"
- *     responses:
- *       200:
- *         description: A pool object
- *       404:
- *         description: Pool not found
- */
-router.get('/:chainId/:poolId', getPoolByPoolIdAndChainId);
-
-/**
- * @swagger
- * /pools/create-test:
  *   post:
- *     summary: Creates a test pool
+ *     summary: Create a new pool with the given poolId and chainId
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               poolId:
+ *                 type: string
+ *                 description: The ID of the pool to create
+ *                 example: "609"  # Example of poolId
+ *               chainId:
+ *                 type: string
+ *                 description: The chain ID associated with the pool
+ *                 example: "42161"  # Example of chainId (Arbitrum)
+ *             required:
+ *               - poolId
+ *               - chainId
  *     responses:
  *       201:
  *         description: Pool created successfully
+ *       400:
+ *         description: Invalid poolId or chainId format
  *       500:
  *         description: Internal server error
+ *     examples:
+ *       application/json:
+ *         - value:
+ *             poolId: "609"
+ *             chainId: "42161"
  */
-router.post('/create-test', createTestPool);
+router.post('/', createPool);
 
 export default router;

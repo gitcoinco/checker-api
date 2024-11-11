@@ -6,6 +6,7 @@ import { AppDataSource } from '@/data-source';
 import routes from '@/routes';
 import dotenv from 'dotenv';
 import { createLogger } from '@/logger';
+import { postgraphileMiddleware } from '@/postgraphile.config';
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use(
   swaggerUi.setup(specs) as express.RequestHandler
 );
 
+app.use(postgraphileMiddleware);
 app.use(express.json());
 app.use('/api', routes);
 

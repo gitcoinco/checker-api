@@ -1,17 +1,12 @@
 import { type Pool } from '@/entity/Pool';
-import poolRepository from '@/repository/PoolRepository';
+import { poolRepository } from '@/repository';
 
 class PoolService {
-  async createTestPool(): Promise<Pool> {
-    return await poolRepository.save({
-      chainId: 111551111,
-      poolId: Math.floor(Math.random() * 100).toString(),
-      strategy: 'DummyStrategy',
-      isReviewActive: true,
-    });
+  async savePools(pools: Pool[]): Promise<Pool[]> {
+    return await poolRepository.save(pools);
   }
 
-  async createPool(pool: Pool): Promise<Pool> {
+  async savePool(pool: Partial<Pool>): Promise<Pool> {
     return await poolRepository.save(pool);
   }
 
@@ -39,14 +34,6 @@ class PoolService {
   async getAllPools(): Promise<Pool[]> {
     return await poolRepository.find();
   }
-
-  // async updatePool(pool: Pool): Promise<Pool> {
-  //   return await poolRepository.save(pool);
-  // }
-
-  // async deletePool(id: number): Promise<void> {
-  //   await poolRepository.delete(id);
-  // }
 }
 
 const poolService = new PoolService();

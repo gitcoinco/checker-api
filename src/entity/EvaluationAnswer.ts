@@ -6,7 +6,7 @@ import {
   Unique,
   ManyToOne,
 } from 'typeorm';
-import { EvaluationQuestion } from '@/entity/EvalutionQuestion';
+import { EvaluationQuestion } from '@/entity/EvaluationQuestion';
 import { Evaluation } from '@/entity/Evaluation';
 
 export enum AnswerType {
