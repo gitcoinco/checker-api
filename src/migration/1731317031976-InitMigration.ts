@@ -1,7 +1,7 @@
 import { type MigrationInterface, type QueryRunner } from 'typeorm';
 
-export class InitMigration1731313748935 implements MigrationInterface {
-  name = 'InitMigration1731313748935';
+export class InitMigration1731317031976 implements MigrationInterface {
+  name = 'InitMigration1731317031976';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -17,10 +17,10 @@ export class InitMigration1731313748935 implements MigrationInterface {
       `CREATE TABLE "pool" ("id" SERIAL NOT NULL, "chainId" integer NOT NULL, "poolId" character varying NOT NULL, CONSTRAINT "UQ_4baed6f91c467f39863309e6785" UNIQUE ("chainId", "poolId"), CONSTRAINT "PK_db1bfe411e1516c01120b85f8fe" PRIMARY KEY ("id"))`
     );
     await queryRunner.query(
-      `CREATE TABLE "application" ("id" SERIAL NOT NULL, "chainId" integer NOT NULL, "applicationId" character varying NOT NULL, "poolId" integer NOT NULL, "profileProfileId" character varying(42), CONSTRAINT "UQ_a04ad3e9cf6c137dad17f7905f6" UNIQUE ("applicationId", "poolId", "chainId"), CONSTRAINT "PK_569e0c3e863ebdf5f2408ee1670" PRIMARY KEY ("id"))`
+      `CREATE TABLE "application" ("id" SERIAL NOT NULL, "chainId" integer NOT NULL, "applicationId" character varying NOT NULL, "poolId" integer NOT NULL, "profileId" integer, CONSTRAINT "UQ_a04ad3e9cf6c137dad17f7905f6" UNIQUE ("applicationId", "poolId", "chainId"), CONSTRAINT "PK_569e0c3e863ebdf5f2408ee1670" PRIMARY KEY ("id"))`
     );
     await queryRunner.query(
-      `CREATE TABLE "profile" ("profileId" character varying(42) NOT NULL, CONSTRAINT "PK_61a193410d652adedb69f7ad680" PRIMARY KEY ("profileId"))`
+      `CREATE TABLE "profile" ("id" SERIAL NOT NULL, "profileId" character varying(42) NOT NULL, CONSTRAINT "UQ_61a193410d652adedb69f7ad680" UNIQUE ("profileId"), CONSTRAINT "PK_3dd8bfc97e4a77c70971591bdcb" PRIMARY KEY ("id"))`
     );
     await queryRunner.query(
       `ALTER TABLE "evaluation" ADD CONSTRAINT "FK_f459958482585b957ef22cca734" FOREIGN KEY ("applicationId") REFERENCES "application"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`
@@ -35,13 +35,13 @@ export class InitMigration1731313748935 implements MigrationInterface {
       `ALTER TABLE "application" ADD CONSTRAINT "FK_a2d1c7a2c6ee681b42112d41284" FOREIGN KEY ("poolId") REFERENCES "pool"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`
     );
     await queryRunner.query(
-      `ALTER TABLE "application" ADD CONSTRAINT "FK_f67ac94bcda491a76dce0459eda" FOREIGN KEY ("profileProfileId") REFERENCES "profile"("profileId") ON DELETE NO ACTION ON UPDATE NO ACTION`
+      `ALTER TABLE "application" ADD CONSTRAINT "FK_2537c29f8628eb085b5478e8b00" FOREIGN KEY ("profileId") REFERENCES "profile"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `ALTER TABLE "application" DROP CONSTRAINT "FK_f67ac94bcda491a76dce0459eda"`
+      `ALTER TABLE "application" DROP CONSTRAINT "FK_2537c29f8628eb085b5478e8b00"`
     );
     await queryRunner.query(
       `ALTER TABLE "application" DROP CONSTRAINT "FK_a2d1c7a2c6ee681b42112d41284"`
