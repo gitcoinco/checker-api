@@ -12,12 +12,13 @@
 │   ├── entity                  # TypeORM entities, defining database schemas and relations
 │   ├── ext                     # External API integrations
 │   ├── migration               # Database migrations for schema changes
-│   ├── repository              # Repositories for data access logic
 │   ├── routes                  # API routes
 │   ├── service                 # Business logic and service functions
 │   ├── data-source.ts          # Database connection setup and configuration
 │   ├── index.ts                # Application entry point
-│   └── swagger.ts              # Optional: Swagger setup in TypeScript
+│   ├── postgraphile.config.ts  # Postgraphile configuration
+│   ├── repository.ts           # Repositories for data access logic
+│   ├── swagger.ts              # Optional: Swagger setup in TypeScript
 │   └── utils.ts                # Utility functions and helper methods
 └── tsconfig.json               # TypeScript configuration
 ```
@@ -56,34 +57,14 @@
 - For [Logging.md](./src//logger/logger.md) to understand use winston for logging
 - For Try catch handling done via [catchError](./src/utils.ts)
 - All routes are documented using [swagger](./src/swagger.ts)
+- Postgraphile endpoint is hosted at `http://localhost:3000/graphiql`
 
 ```
 Pools
 ------
-# GET : /pools/:chainId/:poolId (get pool by id)
-# GET : /pools/:chainId/:poolId/applications (get all application of a pool)
-# GET : /pools/:chainId/:poolId/application/:applicationId (get specfic applications)
-# GET : /pools/:chainId/:poolId/application/:applicationId/evaluations (get all evaluations)
-# GET : /pools/:chainId/:poolId/application/:applicationId/evaluations/:evaluator (fetch evaluation by evaluator)
-
 
 POST: /pool/:chainId/:poolId/application/:applicationId/evaluate (save evaluation)
 POST: /pool/:chainId/:poolId/application/:applicationId/evaluate-llm (trigger llm evaluation)
 POST: /pool/:chainId/:poolId/evaluation-questions (save questions needed for evaluation)
-
-
-Profile 
--------
-GET: /profile/:profileId/applications ( get all applications by profile)
-
-=================
-NICE TO HAVE
-=================
-Pools
-------
-GET : /pools (get all pools)
-  - ?manager="0x.." (filter by manager)
-  - ?review-active  (is in review period)
-
 POST  : /pool/:chainId/:poolId/application/:applicationId/review (notify backend that on-chain review is done)
 ```
