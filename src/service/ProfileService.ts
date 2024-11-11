@@ -1,14 +1,26 @@
 import { profileRepository } from '@/repository';
 import { type Application } from '@/entity/Application';
-import { type Profile } from '@/entity/Profile';
+import { Profile } from '@/entity/Profile';
 
 class ProfileService {
-  async createProfile(profile: Profile): Promise<Profile> {
+  async createProfile(profileId: string): Promise<Profile> {
+    const profile = new Profile();
+    profile.profileId = profileId;
     return await profileRepository.save(profile);
   }
 
+  async upsertProfile(profileId: string): Promise<Profile> {
+    let profile = await profileRepository.findOne({
+      where: { profileId },
+    });
+
+    if (profile == null) {
+      profile = await this.createProfile(profileId);
+    }
+    return profile;
+  }
+
   async getApplicationsByProfileId(profileId: string): Promise<Application[]> {
-    // Find the profile by profileId and load the applications relation
     const profile = await profileRepository.findOne({
       where: { profileId },
       relations: ['applications'],
