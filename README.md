@@ -64,11 +64,11 @@
 ```
 Pools
 ------
-GET : /pools/:chainId/:poolId (get pool by id)
-GET : /pools/:chainId/:poolId/applications (get all application of a pool)
-GET : /pools/:chainId/:poolId/application/:applicationId (get specfic applications)
-GET : /pools/:chainId/:poolId/application/:applicationId/evaluations (get all evaluations)
-GET : /pools/:chainId/:poolId/application/:applicationId/evaluations/:evaluator (fetch evaluation by evaluator)
+# GET : /pools/:chainId/:poolId (get pool by id)
+# GET : /pools/:chainId/:poolId/applications (get all application of a pool)
+# GET : /pools/:chainId/:poolId/application/:applicationId (get specfic applications)
+# GET : /pools/:chainId/:poolId/application/:applicationId/evaluations (get all evaluations)
+# GET : /pools/:chainId/:poolId/application/:applicationId/evaluations/:evaluator (fetch evaluation by evaluator)
 
 
 POST: /pool/:chainId/:poolId/application/:applicationId/evaluate (save evaluation)

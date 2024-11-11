@@ -1,5 +1,5 @@
 import { type Pool } from '@/entity/Pool';
-import poolRepository from '@/repository/PoolRepository';
+import { poolRepository } from '@/repository';
 
 class PoolService {
   async createTestPool(): Promise<Pool> {
@@ -42,10 +42,6 @@ class PoolService {
 
   // async updatePool(pool: Pool): Promise<Pool> {
   //   return await poolRepository.save(pool);
-  // }
-
-  // async deletePool(id: number): Promise<void> {
-  //   await poolRepository.delete(id);
   // }
 }
 

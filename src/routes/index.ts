@@ -1,10 +1,12 @@
 import { Router } from 'express';
-import poolRoutes from './poolRoutes';
-import evaluateRoutes from './evaluateRoutes';
+import evaluationRoutes from '@/routes/evaluationRoutes';
+import poolRoutes from '@/routes/poolRoutes';
+import profileRoutes from '@/routes/profileRoutes';
 
 const router = Router();
 
+router.use('/evaluations', evaluationRoutes);
 router.use('/pools', poolRoutes);
-router.use('/evaluate', evaluateRoutes);
+router.use('/profiles', profileRoutes);
 
 export default router;
