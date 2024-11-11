@@ -6,6 +6,25 @@ export enum Status {
   REJECTED = 'REJECTED',
 }
 
+export interface ApplicationMetadata {
+  signature: string;
+  application: {
+    round: string;
+    answers: Array<{
+      type: string;
+      hidden: boolean;
+      question: string;
+      questionId: number;
+      encryptedAnswer?: {
+        ciphertext: string;
+        encryptedSymmetricKey: string;
+      };
+    }>;
+    project: ProjectMetadata;
+    recipient: string;
+  };
+}
+
 export interface Eligibility {
   description: string;
   requirements?: Array<{
@@ -41,14 +60,13 @@ export interface ProjectMetadata {
 
 export interface Application {
   id: string;
-  chainId: string;
-  roundId: string;
-  round: {
-    roundMetadata: RoundMetadata;
-  };
-  metadata: any;
+  metadata: ApplicationMetadata;
+  metadataCid: string;
+  status: Status;
+  projectId: string;
   project: {
     metadata: ProjectMetadata;
+    metadataCid: string;
   };
 }
 export interface RoundWithApplications {
@@ -56,17 +74,7 @@ export interface RoundWithApplications {
   id: string;
   roundMetadata: RoundMetadata;
   roundMetadataCid: string;
-  applications: Array<{
-    id: string;
-    metadata: ProjectMetadata;
-    metadataCid: string;
-    status: Status;
-    projectId: string;
-    project: {
-      metadata: ProjectMetadata;
-      metadataCid: string;
-    };
-  }>;
+  applications: Application[];
 }
 
 export interface RoundApplicationsQueryResponse {
