@@ -63,10 +63,18 @@
 Evaluations
 ------
 
-POST: /evaluations/:chainId/:poolId/application/:applicationId/evaluate (save evaluation)
-POST: /evaluations/:chainId/:poolId/application/:applicationId/llm-evaluate (trigger llm evaluation)
-POST: /evaluations/:chainId/:poolId/questions/add (save questions needed for evaluation)
+router.post('/evaluations/manual-evaluation', createManualEvaluation)
+router.post('/evaluations/trigger-llm-evaluation', triggerLLMEvaluation)
+
+router.post('/evaluation-questions', createEvaluationQuestions);
+
+router.post('/pools', createPools);
+
+router.post('/pools/:poolId/applications', createApplication);
+
 
 # Nice to have
-POST  : /pool/:chainId/:poolId/application/:applicationId/review (notify backend that on-chain review is done)
+router.post('/pools/auto', autoCreatePools);
+router.post('/pools/:poolId/applications/auto', autoCreateApplication);
+POST: /pools/:chainId/pools/:poolId/applications/:applicationId/review
 ```
