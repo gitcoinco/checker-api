@@ -1,4 +1,4 @@
-import { createPools } from '@/controllers/poolController';
+import { createPool } from '@/controllers/poolController';
 import { Router } from 'express';
 
 const router = Router();
@@ -7,7 +7,7 @@ const router = Router();
  * @swagger
  * /pools:
  *   post:
- *     summary: Create new pools with the given pool IDs
+ *     summary: Create a new pool with the given poolId and chainId
  *     requestBody:
  *       required: true
  *       content:
@@ -15,21 +15,30 @@ const router = Router();
  *           schema:
  *             type: object
  *             properties:
- *               poolIds:
- *                 type: array
- *                 items:
- *                   type: string
- *                 description: List of pool IDs to create
+ *               poolId:
+ *                 type: string
+ *                 description: The ID of the pool to create
+ *                 example: "609"  # Example of poolId
+ *               chainId:
+ *                 type: string
+ *                 description: The chain ID associated with the pool
+ *                 example: "42161"  # Example of chainId (Arbitrum)
  *             required:
- *               - poolIds
+ *               - poolId
+ *               - chainId
  *     responses:
  *       201:
- *         description: Pools created successfully
+ *         description: Pool created successfully
  *       400:
- *         description: Invalid poolIds format
+ *         description: Invalid poolId or chainId format
  *       500:
  *         description: Internal server error
+ *     examples:
+ *       application/json:
+ *         - value:
+ *             poolId: "609"
+ *             chainId: "42161"
  */
-router.post('/', createPools);
+router.post('/', createPool);
 
 export default router;

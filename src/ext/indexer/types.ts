@@ -1,5 +1,11 @@
 export type Address = `0x${string}`;
 
+export enum Status {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}
+
 export interface Eligibility {
   description: string;
   requirements?: Array<{
@@ -44,4 +50,24 @@ export interface Application {
   project: {
     metadata: ProjectMetadata;
   };
+}
+export interface RoundWithApplications {
+  chainId: number;
+  id: string;
+  roundMetadata: RoundMetadata;
+  roundMetadataCid: string;
+  applications: Array<{
+    id: string;
+    metadata: ProjectMetadata;
+    metadataCid: string;
+    status: Status;
+    project: {
+      metadata: ProjectMetadata;
+      metadataCid: string;
+    };
+  }>;
+}
+
+export interface RoundApplicationsQueryResponse {
+  rounds: RoundWithApplications[];
 }

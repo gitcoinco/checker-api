@@ -1,7 +1,11 @@
 import { createLogger } from '@/logger';
-import type { Application } from './types';
+import type {
+  Application,
+  RoundApplicationsQueryResponse,
+  RoundWithApplications,
+} from './types';
 import request from 'graphql-request';
-import { getApplication } from './queries';
+import { getApplication, getRoundWithApplications } from './queries';
 import type { Logger } from 'winston';
 
 class Indexer {
@@ -72,6 +76,51 @@ class Indexer {
     } catch (error) {
       this.logger.error(
         `Failed to fetch approved application: ${error.message}`,
+        { error }
+      );
+      throw error;
+    }
+  }
+
+  async getRoundWithApplications({
+    chainId,
+    roundId,
+  }: {
+    chainId: number;
+    roundId: string;
+  }): Promise<RoundWithApplications | null> {
+    this.logger.debug(
+      `Requesting round with applications for roundId: ${roundId}, chainId: ${chainId}`
+    );
+
+    const requestVariables = {
+      chainId,
+      roundId,
+    };
+
+    try {
+      const response: RoundApplicationsQueryResponse = await request(
+        this.indexerEndpoint,
+        getRoundWithApplications,
+        requestVariables
+      );
+
+      if (response.rounds.length === 0) {
+        this.logger.warn(
+          `No round found for roundId: ${roundId} on chainId: ${chainId}`
+        );
+        return null;
+      }
+
+      const round = response.rounds[0];
+
+      this.logger.info(
+        `Successfully fetched round with ID: ${round.id}, which includes ${round.applications.length} applications`
+      );
+      return round;
+    } catch (error) {
+      this.logger.error(
+        `Failed to fetch round with applications: ${error.message}`,
         { error }
       );
       throw error;

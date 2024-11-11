@@ -2,8 +2,12 @@ import { type Pool } from '@/entity/Pool';
 import { poolRepository } from '@/repository';
 
 class PoolService {
-  async createPools(pools: Pool[]): Promise<Pool[]> {
+  async savePools(pools: Pool[]): Promise<Pool[]> {
     return await poolRepository.save(pools);
+  }
+
+  async savePool(pool: Partial<Pool>): Promise<Pool> {
+    return await poolRepository.save(pool);
   }
 
   async getPoolById(id: number): Promise<Pool> {
