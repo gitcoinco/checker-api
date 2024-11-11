@@ -36,44 +36,8 @@ const router = Router();
  */
 router.get('/:chainId/:poolId/:applicationId/evaluate', evaluateApplication);
 
-/**
- * /evaluations/evaluator/{evaluator}:
- *   get:
- *     summary: Retrieves all evaluations by a specific evaluator
- *     parameters:
- *       - in: path
- *         name: evaluator
- *         required: true
- *         description: The address of the evaluator
- *         schema:
- *           type: string
- *           example: "0x1234567890123456789012345678901234567890"
- *     responses:
- *       200:
- *         description: A list of evaluations by the evaluator
- *       404:
- *         description: Evaluations not found for the specified evaluator
- */
-// router.get('/evaluator/:evaluator', getEvaluationsByEvaluator);
+// router.post('/:chainId/:poolId/:applicationId/llm-evaluate', llmEvaluateApplication);
 
-/**
- * /evaluations/{evaluationById}:
- *   get:
- *     summary: Retrieves a specific evaluation by its ID
- *     parameters:
- *       - in: path
- *         name: evaluationById
- *         required: true
- *         description: The unique ID of the evaluation
- *         schema:
- *           type: string
- *           example: "evaluation123"
- *     responses:
- *       200:
- *         description: An evaluation object
- *       404:
- *         description: Evaluation not found
- */
-// router.get('/:evaluationById', getEvaluationById);
+// router.post('/:chainId/:poolId/questions/add', addEvaluationQuestions);
 
 export default router;

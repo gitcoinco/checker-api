@@ -60,11 +60,13 @@
 - Postgraphile endpoint is hosted at `http://localhost:3000/graphiql`
 
 ```
-Pools
+Evaluations
 ------
 
-POST: /pool/:chainId/:poolId/application/:applicationId/evaluate (save evaluation)
-POST: /pool/:chainId/:poolId/application/:applicationId/evaluate-llm (trigger llm evaluation)
-POST: /pool/:chainId/:poolId/evaluation-questions (save questions needed for evaluation)
+POST: /evaluations/:chainId/:poolId/application/:applicationId/evaluate (save evaluation)
+POST: /evaluations/:chainId/:poolId/application/:applicationId/llm-evaluate (trigger llm evaluation)
+POST: /evaluations/:chainId/:poolId/questions/add (save questions needed for evaluation)
+
+# Nice to have
 POST  : /pool/:chainId/:poolId/application/:applicationId/review (notify backend that on-chain review is done)
 ```
