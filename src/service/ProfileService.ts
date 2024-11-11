@@ -1,7 +1,12 @@
 import { profileRepository } from '@/repository';
 import { type Application } from '@/entity/Application';
+import { type Profile } from '@/entity/Profile';
 
 class ProfileService {
+  async createProfile(profile: Profile): Promise<Profile> {
+    return await profileRepository.save(profile);
+  }
+
   async getApplicationsByProfileId(profileId: string): Promise<Application[]> {
     // Find the profile by profileId and load the applications relation
     const profile = await profileRepository.findOne({

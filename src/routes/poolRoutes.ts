@@ -1,5 +1,4 @@
 import {
-  createTestPool,
   getAllPools,
   getPoolById,
   getPoolByPoolIdAndChainId,
@@ -202,18 +201,5 @@ router.get('/:chainId/:poolId', getPoolByPoolIdAndChainId);
  *         description: Evaluation not found
  */
 // router.get('/:chainId/:poolId/applications/:applicationId/evaluations/:evaluator', getApplicationEvaluationByEvaluator);
-
-/**
- * @swagger
- * /pools/create-test:
- *   post:
- *     summary: Creates a test pool
- *     responses:
- *       201:
- *         description: Pool created successfully
- *       500:
- *         description: Internal server error
- */
-router.post('/create-test', createTestPool);
 
 export default router;

@@ -48,11 +48,7 @@
    ```bash
    npm run dev
    ```
-6. **Testing the setup**:
-  - Create a test pool with `curl -X POST http://localhost:3000/api/pools/create-test`
-  - Retrieved the created pool with `curl -X GET http://localhost:3000/api/pools`
-
-7. **API Overview**
+6. **API Overview**
   - Visit `http://localhost:3000/api-docs`
 
 **Note**

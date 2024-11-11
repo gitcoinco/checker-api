@@ -2,15 +2,6 @@ import { type Pool } from '@/entity/Pool';
 import { poolRepository } from '@/repository';
 
 class PoolService {
-  async createTestPool(): Promise<Pool> {
-    return await poolRepository.save({
-      chainId: 111551111,
-      poolId: Math.floor(Math.random() * 100).toString(),
-      strategy: 'DummyStrategy',
-      isReviewActive: true,
-    });
-  }
-
   async createPool(pool: Pool): Promise<Pool> {
     return await poolRepository.save(pool);
   }
@@ -39,10 +30,6 @@ class PoolService {
   async getAllPools(): Promise<Pool[]> {
     return await poolRepository.find();
   }
-
-  // async updatePool(pool: Pool): Promise<Pool> {
-  //   return await poolRepository.save(pool);
-  // }
 }
 
 const poolService = new PoolService();
