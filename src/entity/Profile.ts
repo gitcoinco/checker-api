@@ -3,7 +3,7 @@ import { Application } from '@/entity/Application';
 
 @Entity()
 export class Profile {
-  @PrimaryColumn({ length: 40 })
+  @PrimaryColumn({ length: 42 })
   profileId: string;
 
   @OneToMany(() => Application, application => application.profile)
