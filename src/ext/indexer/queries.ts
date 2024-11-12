@@ -38,6 +38,7 @@ export const getRoundWithApplications = gql`
         metadata
         metadataCid
         status
+        projectId
         project: canonicalProject {
           metadata
           metadataCid

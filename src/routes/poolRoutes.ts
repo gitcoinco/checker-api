@@ -1,4 +1,4 @@
-import { createPool } from '@/controllers/poolController';
+import { syncPool } from '@/controllers/poolController';
 import { Router } from 'express';
 
 const router = Router();
@@ -7,7 +7,7 @@ const router = Router();
  * @swagger
  * /pools:
  *   post:
- *     summary: Create a new pool with the given poolId and chainId
+ *     summary: Syncs a pool with the given poolId and chainId from the indexer
  *     requestBody:
  *       required: true
  *       content:
@@ -24,7 +24,7 @@ const router = Router();
  *                 description: The chain ID associated with the pool
  *                 example: "42161"  # Example of chainId (Arbitrum)
  *             required:
- *               - poolId
+ *               - alloPoolId
  *               - chainId
  *     responses:
  *       201:
@@ -36,9 +36,9 @@ const router = Router();
  *     examples:
  *       application/json:
  *         - value:
- *             poolId: "609"
+ *             alloPoolId: "609"
  *             chainId: "42161"
  */
-router.post('/', createPool);
+router.post('/', syncPool);
 
 export default router;

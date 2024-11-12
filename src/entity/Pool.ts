@@ -9,7 +9,7 @@ import { EvaluationQuestion } from '@/entity/EvaluationQuestion';
 import { Application } from '@/entity/Application';
 
 @Entity()
-@Unique(['chainId', 'poolId'])
+@Unique(['chainId', 'alloPoolId'])
 export class Pool {
   @PrimaryGeneratedColumn()
   id: number;
@@ -18,7 +18,7 @@ export class Pool {
   chainId: number;
 
   @Column()
-  poolId: string;
+  alloPoolId: string;
 
   @OneToMany(() => EvaluationQuestion, question => question.pool)
   questions: EvaluationQuestion[];

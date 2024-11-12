@@ -2,31 +2,34 @@ import { type Pool } from '@/entity/Pool';
 import { poolRepository } from '@/repository';
 
 class PoolService {
-  async savePools(pools: Pool[]): Promise<Pool[]> {
-    return await poolRepository.save(pools);
-  }
-
   async savePool(pool: Partial<Pool>): Promise<Pool> {
     return await poolRepository.save(pool);
   }
 
-  async getPoolById(id: number): Promise<Pool> {
+  async getPoolById(id: number): Promise<Pool | null> {
     const pool = await poolRepository.findOne({ where: { id } });
-    if (pool == null) {
-      throw new Error(`Pool with id ${id} not found`);
-    }
     return pool;
   }
 
   async getPoolByPoolIdAndChainId(
     chainId: number,
-    poolId: string
-  ): Promise<Pool> {
+    alloPoolId: string
+  ): Promise<Pool | null> {
     const pool = await poolRepository.findOne({
-      where: { chainId, poolId },
+      where: { chainId, alloPoolId },
     });
+    return pool;
+  }
+
+  async upsertPool(chainId: number, alloPoolId: string): Promise<Pool> {
+    let pool = await this.getPoolByPoolIdAndChainId(chainId, alloPoolId);
     if (pool == null) {
-      throw new Error(`Pool with poolId ${pool} on ${chainId} not found`);
+      pool = await this.savePool({
+        chainId,
+        alloPoolId,
+        questions: [],
+        applications: [],
+      });
     }
     return pool;
   }

@@ -64,17 +64,17 @@ Evaluations
 ------
 
 router.post('/evaluations/manual-evaluation', createManualEvaluation)
-router.post('/evaluations/trigger-llm-evaluation', triggerLLMEvaluation)
+router.post('/evaluations/llm-evaluation', triggerLLMEvaluation)
 
-router.post('/evaluation-questions', createEvaluationQuestions);
-
-router.post('/pools', createPools);
-
-router.post('/pools/:poolId/applications', createApplication);
-
+router.post('/pools', syncPool);
+   - pool creation
+   - application creation
+      - for each application AI evaluation
+   - question creation
+   - profile creation 
 
 # Nice to have
-router.post('/pools/auto', autoCreatePools);
+router.post('/evaluation-questions', createEvaluationQuestions);
 router.post('/pools/:poolId/applications/auto', autoCreateApplication);
 POST: /pools/:chainId/pools/:poolId/applications/:applicationId/review
 ```
