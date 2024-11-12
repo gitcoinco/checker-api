@@ -41,7 +41,7 @@ export const evaluateApplication = async (
     )
   );
 
-  if (errorFetching !== null || application == null) {
+  if (errorFetching !== undefined || application === null) {
     logger.warn(`No application found for applicationId: ${applicationId}`);
     res.status(404).json({ message: 'Application not found' });
     return;
@@ -51,7 +51,8 @@ export const evaluateApplication = async (
     poolService.getPoolByChainIdAndAlloPoolId(chainId, alloPoolId.toString())
   );
 
-  if (errorGetPool !== null || pool == null) {
+  console.log(pool);
+  if (errorGetPool !== undefined || pool == null) {
     logger.warn(`No pool found for poolId: ${alloPoolId}`);
     res.status(404).json({ message: 'Pool not found' });
     return;

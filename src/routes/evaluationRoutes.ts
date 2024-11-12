@@ -22,7 +22,7 @@ const router = Router();
  *         description: The poolId of the pool
  *         schema:
  *           type: string
- *         example: 608
+ *         example: 609
  *       - in: path
  *         name: applicationId
  *         required: true
@@ -54,7 +54,7 @@ const router = Router();
  *             properties:
  *               poolId:
  *                 type: string
- *                 example: "608"
+ *                 example: "609"
  *               applicationId:
  *                 type: string
  *                 example: "app123"
@@ -85,7 +85,7 @@ const router = Router();
  *                 type: integer
  *                 example: 42161
  *             example:
- *               poolId: "608"
+ *               poolId: "609"
  *               applicationId: "0"
  *               evaluator: "0x12345abcdef67890"
  *               cid: "cid1234567890"
