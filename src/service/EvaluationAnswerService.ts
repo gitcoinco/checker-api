@@ -1,11 +1,19 @@
-import { type EvaluationAnswer } from '@/entity/EvaluationAnswer';
+import type { AnswerType, EvaluationAnswer } from '@/entity/EvaluationAnswer';
 import { evaluationAnswerRepository } from '@/repository';
 
 class EvaluationAnswerService {
-  async createEvaluationAnswers(
-    evaluationAnswers: Array<Partial<EvaluationAnswer>>
-  ): Promise<EvaluationAnswer[]> {
-    return await evaluationAnswerRepository.save(evaluationAnswers);
+  async createEvaluationAnswer(
+    evaluationId: number,
+    evaluationQuestionId: number,
+    answer: AnswerType
+  ): Promise<EvaluationAnswer> {
+    const evaluationAnswer = evaluationAnswerRepository.create({
+      evaluationId,
+      evaluationQuestionId,
+      answer,
+    });
+
+    return await evaluationAnswerRepository.save(evaluationAnswer);
   }
 }
 
