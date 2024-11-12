@@ -1,10 +1,10 @@
 import OpenAI from 'openai';
-import type { ApplicationMetadata, RoundMetadata } from '../indexer';
+import type { ApplicationMetadata, RoundMetadata } from '@/ext/indexer';
+import type { PromptEvaluationQuestions } from '@/ext/openai/types';
 import {
   createAiEvaluationPrompt,
   createEvaluationQuestionPrompt,
-  type PromptEvaluationQuestions,
-} from './prompt';
+} from '@/ext/openai/prompt';
 import { createLogger } from '@/logger';
 import { type EvaluationSummaryInput } from '@/service/EvaluationService';
 
@@ -48,9 +48,7 @@ export const requestEvaluation = async (
     questions
   );
   const result = await queryOpenAI(prompt);
-  console.log('===> 5');
-  console.log(result);
-  // logger.info('Application evaluation complete', { result });
+  logger.info('Application evaluation complete', { result });
   return JSON.parse(result);
 };
 

@@ -1,16 +1,9 @@
-import type { ApplicationMetadata, RoundMetadata } from '../indexer';
-
-export type PromptEvaluationQuestions = string[];
-
-const essentialRoundFields: Array<keyof RoundMetadata> = [
-  'name',
-  'roundType',
-  'eligibility',
-];
-
-const essentialApplicationFields: Array<keyof ApplicationMetadata> = [
-  'application',
-];
+import { type ApplicationMetadata, type RoundMetadata } from '@/ext/indexer';
+import {
+  essentialApplicationFields,
+  essentialRoundFields,
+  type PromptEvaluationQuestions,
+} from './types';
 
 // Function to remove every nth character from a string
 const removeEveryNthChar = (str: string, n: number): string => {
