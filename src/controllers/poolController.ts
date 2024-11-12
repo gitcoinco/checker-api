@@ -113,14 +113,14 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
           evaluationQuestions
         );
 
-        await evaluationService.createEvaluationWithAnswers(
-          pool.id,
-          poolApplication.id,
-          poolApplication.metadataCid,
-          addressFrom(1),
-          evaluation,
-          EVALUATOR_TYPE.LLM_GPT3
-        );
+        await evaluationService.createEvaluationWithAnswers({
+          poolId: pool.id,
+          applicationId: poolApplication.id,
+          cid: poolApplication.metadataCid,
+          evaluator: addressFrom(1),
+          summaryInput: evaluation,
+          evaluatorType: EVALUATOR_TYPE.LLM_GPT3,
+        });
 
         logger.info('Inserted application', index, application);
         return application;

@@ -17,19 +17,28 @@ export interface EvaluationSummaryInput {
   summary: string;
 }
 
+export interface CreateEvaluationParams {
+  poolId: number;
+  applicationId: string;
+  cid: string;
+  evaluator: string;
+  summaryInput: EvaluationSummaryInput;
+  evaluatorType?: EVALUATOR_TYPE;
+}
+
 class EvaluationService {
   async createEvaluation(evaluation: Partial<Evaluation>): Promise<Evaluation> {
     return await evaluationRepository.save(evaluation);
   }
 
-  async createEvaluationWithAnswers(
-    poolId: number,
-    applicationId: string,
-    cid: string,
-    evaluator: string,
-    summaryInput: EvaluationSummaryInput,
-    evaluatorType: EVALUATOR_TYPE = EVALUATOR_TYPE.HUMAN
-  ): Promise<Evaluation> {
+  async createEvaluationWithAnswers({
+    poolId,
+    applicationId,
+    cid,
+    evaluator,
+    summaryInput,
+    evaluatorType = EVALUATOR_TYPE.HUMAN,
+  }: CreateEvaluationParams): Promise<Evaluation> {
     const { questions, summary } = summaryInput;
 
     const application = await applicationRepository.findOne({

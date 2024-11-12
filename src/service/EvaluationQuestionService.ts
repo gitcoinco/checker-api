@@ -20,7 +20,7 @@ class EvaluationQuestionService {
     alloPoolId: string,
     questions: PromptEvaluationQuestions
   ): Promise<EvaluationQuestion[]> {
-    const pool = await poolService.getPoolByPoolIdAndChainId(
+    const pool = await poolService.getPoolByChainIdAndAlloPoolId(
       chainId,
       alloPoolId
     );

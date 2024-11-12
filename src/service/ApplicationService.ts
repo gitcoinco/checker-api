@@ -2,6 +2,7 @@ import { applicationRepository } from '@/repository';
 import { Application } from '@/entity/Application';
 import profileService from './ProfileService';
 import poolService from './PoolService';
+import { In } from 'typeorm';
 
 class ApplicationService {
   async createApplication(
@@ -40,7 +41,7 @@ class ApplicationService {
       chainId
     );
 
-    const pool = await poolService.getPoolByPoolIdAndChainId(
+    const pool = await poolService.getPoolByChainIdAndAlloPoolId(
       chainId,
       alloPoolId
     );
@@ -88,6 +89,40 @@ class ApplicationService {
       alloPoolId,
       chainId
     );
+    return applications;
+  }
+
+  async getApplicationByChainIdPoolIdApplicationId(
+    alloPoolId: string,
+    chainId: number,
+    applicationId: string
+  ): Promise<Application | null> {
+    const application = await applicationRepository.findOne({
+      where: {
+        pool: { alloPoolId },
+        chainId,
+        applicationId,
+      },
+      relations: ['pool'],
+    });
+
+    return application;
+  }
+
+  async getApplicationsByChainIdPoolIdApplicationIds(
+    alloPoolId: string,
+    chainId: number,
+    applicationIdArray: string[]
+  ): Promise<Application[]> {
+    const applications = await applicationRepository.find({
+      where: {
+        pool: { alloPoolId },
+        chainId,
+        applicationId: In(applicationIdArray),
+      },
+      relations: ['pool'],
+    });
+
     return applications;
   }
 }

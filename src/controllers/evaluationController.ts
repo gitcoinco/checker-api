@@ -1,53 +1,96 @@
-// import type { Request, Response } from 'express';
-// import { createLogger } from '@/logger';
-// import { indexer } from '@/ext/indexer';
-// import { requestEvaluation } from '@/ext/openai';
-// import { validateRequest } from '@/utils';
+import type { Request, Response } from 'express';
+import evaluationService, {
+  type CreateEvaluationParams,
+} from '@/service/Evaluation';
+import { catchError, validateRequest } from '@/utils';
+import { createLogger } from '@/logger';
+import { EVALUATOR_TYPE } from '@/entity/Evaluation';
+import applicationService from '@/service/ApplicationService';
+import poolService from '@/service/PoolService';
 
-// const logger = createLogger();
+const logger = createLogger();
 
-// export const evaluateApplication = async (
-//   req: Request,
-//   res: Response
-// ): Promise<void> => {
-//   validateRequest(req, res);
+interface EvaluateApplicationBody extends CreateEvaluationParams {
+  chainId: number;
+}
 
-//   const { chainId, poolId, applicationId } = req.params;
+export const evaluateApplication = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  validateRequest(req, res);
 
-//   logger.info(
-//     `Received evaluate request for chainId: ${chainId}, poolId: ${poolId}, applicationId: ${applicationId}`
-//   );
+  const {
+    poolId: alloPoolId,
+    applicationId,
+    cid,
+    evaluator,
+    summaryInput,
+    chainId,
+  }: EvaluateApplicationBody = req.body;
 
-//   try {
-//     const application = await indexer.getApplication({
-//       roundId: poolId,
-//       chainId: parseInt(chainId, 10),
-//       applicationId,
-//     });
+  logger.info(
+    `Received evaluation request for applicationId: ${applicationId} in poolId: ${alloPoolId}`
+  );
 
-//     if (application !== null) {
-//       logger.info(
-//         `Successfully fetched application with ID: ${application.id}`
-//       );
+  const [errorFetching, application] = await catchError(
+    applicationService.getApplicationByChainIdPoolIdApplicationId(
+      alloPoolId.toString(),
+      chainId,
+      applicationId
+    )
+  );
 
-//       const promptEvaluationResult = await requestEvaluation(application);
+  if (errorFetching !== null || application == null) {
+    logger.warn(`No application found for applicationId: ${applicationId}`);
+    res.status(404).json({ message: 'Application not found' });
+    return;
+  }
 
-//       res.status(200).json({
-//         message: 'Successfully evaluated application',
-//         data: promptEvaluationResult,
-//       });
-//     } else {
-//       logger.info(`No application found for ID: ${applicationId}`);
-//       res.status(404).json({
-//         message: 'Application not found',
-//         data: { chainId, poolId, applicationId },
-//       });
-//     }
-//   } catch (error) {
-//     logger.error('Error evaluating application', { error });
-//     res.status(500).json({
-//       message: 'Error evaluating application',
-//       error: error.message,
-//     });
-//   }
-// };
+  const [errorGetPool, pool] = await catchError(
+    poolService.getPoolByChainIdAndAlloPoolId(chainId, alloPoolId.toString())
+  );
+
+  if (errorGetPool !== null || pool == null) {
+    logger.warn(`No pool found for poolId: ${alloPoolId}`);
+    res.status(404).json({ message: 'Pool not found' });
+    return;
+  }
+
+  // Call your service to create an evaluation with answers
+  const [evaluationError, evaluation] = await catchError(
+    evaluationService.createEvaluationWithAnswers({
+      poolId: pool.id,
+      applicationId,
+      cid,
+      evaluator,
+      summaryInput,
+      evaluatorType: EVALUATOR_TYPE.HUMAN,
+    })
+  );
+
+  if (evaluationError !== undefined) {
+    logger.error('Failed to create evaluation:', evaluationError);
+    res.status(500).json({
+      message: 'Error creating evaluation',
+      error: evaluationError.message,
+    });
+    return;
+  }
+
+  if (evaluation == null) {
+    logger.error('Failed to create evaluation:', evaluationError);
+    res.status(500).json({
+      message: 'Error creating evaluation',
+      error: 'Evaluation is null',
+    });
+    return;
+  }
+
+  // Respond with the evaluation result
+  logger.info(`Evaluation created for applicationId: ${applicationId}`);
+  res.status(200).json({
+    message: 'Evaluation successfully created',
+    evaluationId: evaluation.id,
+  });
+};
