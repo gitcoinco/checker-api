@@ -3,7 +3,7 @@ import { evaluationAnswerRepository } from '@/repository';
 
 class EvaluationAnswerService {
   async createEvaluationAnswers(
-    evaluationAnswers: EvaluationAnswer[]
+    evaluationAnswers: Array<Partial<EvaluationAnswer>>
   ): Promise<EvaluationAnswer[]> {
     return await evaluationAnswerRepository.save(evaluationAnswers);
   }

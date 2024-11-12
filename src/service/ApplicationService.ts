@@ -79,6 +79,17 @@ class ApplicationService {
 
     return await this.createApplications(newApplications);
   }
+
+  async getEvaluationsByPoolId(
+    alloPoolId: string,
+    chainId: number
+  ): Promise<Application[]> {
+    const applications = await this.getApplicationsByPoolId(
+      alloPoolId,
+      chainId
+    );
+    return applications;
+  }
 }
 
 const applicationService = new ApplicationService();

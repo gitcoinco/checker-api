@@ -1,4 +1,4 @@
-import { evaluateApplication } from '@/controllers/evaluationController';
+// import { evaluateApplication } from '@/controllers/evaluationController';
 import { Router } from 'express';
 
 const router = Router();
@@ -34,7 +34,7 @@ const router = Router();
  *       200:
  *         description: Successfully logged the input parameters
  */
-router.get('/:chainId/:poolId/:applicationId/evaluate', evaluateApplication);
+// router.get('/:chainId/:poolId/:applicationId/evaluate', evaluateApplication);
 
 // router.post('/:chainId/:poolId/:applicationId/llm-evaluate', llmEvaluateApplication);
 

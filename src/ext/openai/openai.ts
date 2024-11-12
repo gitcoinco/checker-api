@@ -3,8 +3,8 @@ import type { ApplicationMetadata, RoundMetadata } from '../indexer';
 import {
   createAiEvaluationPrompt,
   createEvaluationQuestionPrompt,
-  type EvaluationQuestions,
-  type EvaluationResult,
+  type PromptEvaluationQuestions,
+  type PromptEvaluationResult,
 } from './prompt';
 import { createLogger } from '@/logger';
 
@@ -28,7 +28,18 @@ const queryOpenAI = async <T>(prompt: string): Promise<T> => {
       JSON.stringify(response, null, 2)
     );
 
-    const result: T = JSON.parse(response.choices[0].text.trim());
+    console.log('=======>A4', response);
+    console.log('=======>A5', response.choices[0]);
+    console.log('=======>A6', response.choices[0].text);
+    console.log('=======>A7', response.choices[0].text.trim());
+    const shit = response.choices[0].text.trim();
+    const questions = shit.split('\n');
+
+    console.log('====> A9', questions);
+
+    const result: T = JSON.parse(questions);
+    console.log('=======>A8', result);
+
     return result;
   } catch (error) {
     logger.error('Error calling OpenAI API:', { error });
@@ -39,20 +50,23 @@ const queryOpenAI = async <T>(prompt: string): Promise<T> => {
 export const requestEvaluation = async (
   roundMetadata: RoundMetadata,
   applicationMetadata: ApplicationMetadata
-): Promise<EvaluationResult> => {
+): Promise<PromptEvaluationResult> => {
   // logger.debug(`Evaluating application with ID: ${applicationMetadata}`);
-  const prompt = createAiEvaluationPrompt(roundMetadata, applicationMetadata);
-  const result = await queryOpenAI<EvaluationResult>(prompt);
+  const prompt: string = createAiEvaluationPrompt(
+    roundMetadata,
+    applicationMetadata
+  );
+  const result = await queryOpenAI<PromptEvaluationResult>(prompt);
   logger.info('Application evaluation complete', { result });
   return result;
 };
 
 export const requestEvaluationQuestions = async (
   roundMetadata: RoundMetadata
-): Promise<EvaluationQuestions> => {
+): Promise<PromptEvaluationQuestions> => {
   logger.debug('Requesting evaluation questions from OpenAI');
-  const prompt = createEvaluationQuestionPrompt(roundMetadata);
-  const result = await queryOpenAI<EvaluationQuestions>(prompt);
+  const prompt: string = createEvaluationQuestionPrompt(roundMetadata);
+  const result = await queryOpenAI<PromptEvaluationQuestions>(prompt);
   logger.info('Received evaluation questions from OpenAI', { result });
   return result;
 };

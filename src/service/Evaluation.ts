@@ -2,7 +2,7 @@ import { type Evaluation } from '@/entity/Evaluation';
 import { evaluationRepository } from '@/repository';
 
 class EvaluationService {
-  async createEvaluation(evaluation: Evaluation): Promise<Evaluation> {
+  async createEvaluation(evaluation: Partial<Evaluation>): Promise<Evaluation> {
     return await evaluationRepository.save(evaluation);
   }
 }

@@ -1,11 +1,11 @@
 import type { ApplicationMetadata, RoundMetadata } from '../indexer';
 
-export interface EvaluationResult {
+export interface PromptEvaluationResult {
   score: number;
   feedback: string;
 }
 
-export type EvaluationQuestions = string[];
+export type PromptEvaluationQuestions = string[];
 
 // const essentialProjectFields: Array<keyof ProjectMetadata> = [
 //   'title',

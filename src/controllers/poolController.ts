@@ -4,6 +4,8 @@ import { catchError, validateRequest } from '@/utils';
 import { createLogger } from '@/logger';
 import { indexer } from '@/ext/indexer';
 import applicationService from '@/service/ApplicationService';
+import { requestEvaluationQuestions } from '@/ext/openai';
+import evaluationQuestionService from '@/service/EvaluationQuestionService';
 
 const logger = createLogger();
 
@@ -48,8 +50,32 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  // TODO: fetch questions from gpt
-  // evaluationQuestionService.resetEvaluationQuestions(chainId, alloPoolId, poolData.questions);
+  console.log('====>Shit2');
+
+  const [evalError, evaluationQuestions] = await catchError(
+    requestEvaluationQuestions(poolData.roundMetadata)
+  );
+
+  console.log('====>Shit3', evalError, evaluationQuestions);
+
+  if (evalError != null || evaluationQuestions == null) {
+    logger.error(
+      `Error requesting evaluation questions: ${evalError?.message}`
+    );
+    res
+      .status(500)
+      .json({
+        message: 'Error requesting evaluation questions',
+        error: evalError?.message,
+      });
+    return;
+  }
+
+  await evaluationQuestionService.resetEvaluationQuestions(
+    chainId,
+    alloPoolId,
+    evaluationQuestions
+  );
 
   const applicationData = poolData.applications.map(application => ({
     applicationId: application.id,
