@@ -87,41 +87,47 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
 
   if (pool !== undefined) {
     // todo: should we fetch all applications without llm evaluation instead?
-    for (const [index, application] of insertedApplications.entries()) {
-      const poolApplication = poolData.applications.find(
-        a => a.id === application.applicationId
-      );
-
-      if (poolApplication == null) {
-        logger.warn(
-          'No application found for applicationId',
-          application.applicationId
+    const evaluationPromises = insertedApplications.map(
+      async (application, index) => {
+        const poolApplication = poolData.applications.find(
+          a => a.id === application.applicationId
         );
-        return;
+
+        if (poolApplication == null) {
+          logger.warn(
+            'No application found for applicationId',
+            application.applicationId
+          );
+          return null;
+        }
+
+        // todo: remove, just for dev purposes, will be too expensive
+        if (index >= 10) {
+          logger.info('Skipping application', index);
+          return null;
+        }
+
+        const evaluation = await requestEvaluation(
+          poolData.roundMetadata,
+          poolApplication.metadata,
+          evaluationQuestions
+        );
+
+        await evaluationService.createEvaluationWithAnswers(
+          pool.id,
+          poolApplication.id,
+          poolApplication.metadataCid,
+          addressFrom(1),
+          evaluation,
+          EVALUATOR_TYPE.LLM_GPT3
+        );
+
+        logger.info('Inserted application', index, application);
+        return application;
       }
+    );
 
-      // todo: remove, just for dev purposes, will be too expensive
-      if (index >= 10) {
-        logger.info('Skipping application', index);
-        break;
-      }
-
-      const evaluation = await requestEvaluation(
-        poolData.roundMetadata,
-        poolApplication.metadata,
-        evaluationQuestions
-      );
-
-      await evaluationService.createEvaluationWithAnswers(
-        pool.id,
-        poolApplication.id,
-        poolApplication.metadataCid,
-        addressFrom(1),
-        evaluation,
-        EVALUATOR_TYPE.LLM_GPT3
-      );
-      logger.info('Inserted application', index, application);
-    }
+    await Promise.all(evaluationPromises);
   }
   logger.info('successfully synced pool', pool);
   res.status(200).json({ message: 'pool synced successfully' });
