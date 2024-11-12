@@ -13,7 +13,7 @@ export class Profile {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 42 })
+  @Column()
   profileId: string;
 
   @OneToMany(() => Application, application => application.profile)
