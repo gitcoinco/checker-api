@@ -50,13 +50,9 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  console.log('====>Shit2');
-
   const [evalError, evaluationQuestions] = await catchError(
     requestEvaluationQuestions(poolData.roundMetadata)
   );
-
-  console.log('====>Shit3', evalError, evaluationQuestions);
 
   if (evalError != null || evaluationQuestions == null) {
     logger.error(

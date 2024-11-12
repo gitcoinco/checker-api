@@ -14,7 +14,7 @@ const openai = new OpenAI({
 
 const logger = createLogger();
 
-const queryOpenAI = async <T>(prompt: string): Promise<T> => {
+const queryOpenAI = async (prompt: string): Promise<string> => {
   try {
     const response = await openai.completions.create({
       model: 'gpt-3.5-turbo-instruct',
@@ -28,17 +28,7 @@ const queryOpenAI = async <T>(prompt: string): Promise<T> => {
       JSON.stringify(response, null, 2)
     );
 
-    console.log('=======>A4', response);
-    console.log('=======>A5', response.choices[0]);
-    console.log('=======>A6', response.choices[0].text);
-    console.log('=======>A7', response.choices[0].text.trim());
-    const shit = response.choices[0].text.trim();
-    const questions = shit.split('\n');
-
-    console.log('====> A9', questions);
-
-    const result: T = JSON.parse(questions);
-    console.log('=======>A8', result);
+    const result = response.choices[0].text.trim();
 
     return result;
   } catch (error) {
@@ -51,14 +41,13 @@ export const requestEvaluation = async (
   roundMetadata: RoundMetadata,
   applicationMetadata: ApplicationMetadata
 ): Promise<PromptEvaluationResult> => {
-  // logger.debug(`Evaluating application with ID: ${applicationMetadata}`);
   const prompt: string = createAiEvaluationPrompt(
     roundMetadata,
     applicationMetadata
   );
-  const result = await queryOpenAI<PromptEvaluationResult>(prompt);
+  const result = await queryOpenAI(prompt);
   logger.info('Application evaluation complete', { result });
-  return result;
+  return JSON.parse(result);
 };
 
 export const requestEvaluationQuestions = async (
@@ -66,7 +55,10 @@ export const requestEvaluationQuestions = async (
 ): Promise<PromptEvaluationQuestions> => {
   logger.debug('Requesting evaluation questions from OpenAI');
   const prompt: string = createEvaluationQuestionPrompt(roundMetadata);
-  const result = await queryOpenAI<PromptEvaluationQuestions>(prompt);
+  const result = await queryOpenAI(prompt);
   logger.info('Received evaluation questions from OpenAI', { result });
-  return result;
+  return result
+    .split('\n')
+    .map(line => line.replace(/^\d+\.\s*/, '').trim())
+    .filter(line => line.length > 0);
 };
