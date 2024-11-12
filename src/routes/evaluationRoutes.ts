@@ -5,42 +5,6 @@ const router = Router();
 
 /**
  * @swagger
- * /evaluations/{chainId}/{poolId}/{applicationId}:
- *   get:
- *     summary: Logs the input parameters (chainId, poolId, applicationId)
- *     parameters:
- *       - in: path
- *         name: chainId
- *         required: true
- *         description: The chainId of the pool
- *         schema:
- *           type: string
- *         example: 42161
- *       - in: path
- *         name: poolId
- *         required: true
- *         description: The poolId of the pool
- *         schema:
- *           type: string
- *         example: 609
- *       - in: path
- *         name: applicationId
- *         required: true
- *         description: The applicationId of the pool
- *         schema:
- *           type: string
- *         example: 47
- *     responses:
- *       200:
- *         description: Successfully logged the input parameters
- */
-
-// router.post('/:chainId/:poolId/:applicationId/llm-evaluate', llmEvaluateApplication);
-
-// router.post('/:chainId/:poolId/questions/add', addEvaluationQuestions);
-
-/**
- * @swagger
  * /evaluate:
  *   post:
  *     summary: "Evaluate an application"
