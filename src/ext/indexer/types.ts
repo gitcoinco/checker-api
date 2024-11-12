@@ -69,6 +69,7 @@ export interface Application {
     metadataCid: string;
   };
 }
+
 export interface RoundWithApplications {
   chainId: number;
   id: string;
@@ -79,4 +80,16 @@ export interface RoundWithApplications {
 
 export interface RoundApplicationsQueryResponse {
   rounds: RoundWithApplications[];
+}
+
+export interface RoundWithSingleApplication {
+  chainId: number;
+  id: string;
+  roundMetadata: RoundMetadata;
+  roundMetadataCid: string;
+  applications: Application[];
+}
+
+export interface RoundApplicationQueryResponse {
+  rounds: RoundWithSingleApplication[];
 }

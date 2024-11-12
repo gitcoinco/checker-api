@@ -6,6 +6,7 @@ import {
 } from '@/repository';
 import { toAnswerType } from '@/entity/EvaluationAnswer';
 import evaluationAnswerService from './EvaluationAnswerService';
+import { type PromptEvaluationQuestions } from '@/ext/openai';
 
 interface EvaluationAnswerInput {
   questionIndex: number;
@@ -18,7 +19,7 @@ export interface EvaluationSummaryInput {
 }
 
 export interface CreateEvaluationParams {
-  poolId: number;
+  alloPoolId: string;
   applicationId: string;
   cid: string;
   evaluator: string;
@@ -32,7 +33,7 @@ class EvaluationService {
   }
 
   async createEvaluationWithAnswers({
-    poolId,
+    alloPoolId,
     applicationId,
     cid,
     evaluator,
@@ -42,7 +43,7 @@ class EvaluationService {
     const { questions, summary } = summaryInput;
 
     const application = await applicationRepository.findOne({
-      where: { poolId, applicationId },
+      where: { pool: { alloPoolId }, applicationId },
     });
 
     if (application == null) {
@@ -72,7 +73,7 @@ class EvaluationService {
 
     for (const question of questions) {
       const evaluationQuestion = await evaluationQuestionRepository.findOne({
-        where: { poolId, questionIndex: question.questionIndex },
+        where: { pool: { alloPoolId }, questionIndex: question.questionIndex },
       });
 
       if (evaluationQuestion == null) {
@@ -90,6 +91,30 @@ class EvaluationService {
 
     return evaluation;
   }
+
+  /**
+   * Fetches all questions for a given chainId and alloPoolId.
+   * @param chainId - The chainId of the pool.
+   * @param alloPoolId - The alloPoolId of the pool.
+   * @returns An array of questions as strings.
+   */
+  getQuestionsByChainAndAlloPoolId = async (
+    chainId: number,
+    alloPoolId: string
+  ): Promise<PromptEvaluationQuestions> => {
+    const questions = await evaluationQuestionRepository.find({
+      where: {
+        pool: { alloPoolId },
+        poolId: chainId,
+      },
+      relations: ['pool'],
+      order: {
+        questionIndex: 'ASC',
+      },
+    });
+
+    return questions.map(question => question.question);
+  };
 }
 
 const evaluationService = new EvaluationService();
