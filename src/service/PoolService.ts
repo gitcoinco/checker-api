@@ -13,20 +13,20 @@ class PoolService {
 
   async getPoolByPoolIdAndChainId(
     chainId: number,
-    poolId: string
+    alloPoolId: string
   ): Promise<Pool | null> {
     const pool = await poolRepository.findOne({
-      where: { chainId, poolId },
+      where: { chainId, alloPoolId },
     });
     return pool;
   }
 
-  async upsertPool(chainId: number, poolId: string): Promise<Pool> {
-    let pool = await this.getPoolByPoolIdAndChainId(chainId, poolId);
+  async upsertPool(chainId: number, alloPoolId: string): Promise<Pool> {
+    let pool = await this.getPoolByPoolIdAndChainId(chainId, alloPoolId);
     if (pool == null) {
       pool = await this.savePool({
         chainId,
-        poolId,
+        alloPoolId,
         questions: [],
         applications: [],
       });

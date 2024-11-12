@@ -8,38 +8,38 @@ import applicationService from '@/service/ApplicationService';
 const logger = createLogger();
 
 interface PoolIdChainId {
-  poolId: string;
+  alloPoolId: string;
   chainId: number;
 }
 
-export const createPool = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const syncPool = async (req: Request, res: Response): Promise<void> => {
   validateRequest(req, res);
 
-  const { chainId, poolId } = req.body as PoolIdChainId;
+  const { chainId, alloPoolId } = req.body as PoolIdChainId;
 
   logger.info(
-    `Received update request for chainId: ${chainId}, poolId: ${poolId}`
+    `Received update request for chainId: ${chainId}, alloPoolId: ${alloPoolId}`
   );
 
   const [errorFetching, poolData] = await catchError(
     indexer.getRoundWithApplications({
       chainId,
-      roundId: poolId,
+      roundId: alloPoolId,
     })
   );
 
   if (errorFetching != null || poolData == null) {
-    logger.warn(`No pool found for chainId: ${chainId}, poolId: ${poolId}`);
+    logger.warn(
+      `No pool found for chainId: ${chainId}, alloPoolId: ${alloPoolId}`
+    );
     res.status(404).json({ message: 'Pool not found on indexer' });
     return;
   }
 
   const [error, pool] = await catchError(
-    poolService.upsertPool(chainId, poolId)
+    poolService.upsertPool(chainId, alloPoolId)
   );
+
   if (error != null) {
     logger.error(`Failed to upsert pool: ${error.message}`);
     res
@@ -48,19 +48,20 @@ export const createPool = async (
     return;
   }
 
-  // TODO: handle questions
+  // TODO: fetch questions from gpt
+  // evaluationQuestionService.resetEvaluationQuestions(chainId, alloPoolId, poolData.questions);
 
   const applicationData = poolData.applications.map(application => ({
     applicationId: application.id,
-    profileId: application.id, // TODO: should be anchor address or project Id
+    profileId: application.projectId,
   }));
 
   await applicationService.upsertApplicationsForPool(
-    poolId,
+    alloPoolId,
     chainId,
     applicationData
   );
 
-  logger.info('Successfully updated pool', pool);
-  res.status(200).json({ message: 'Pool updated successfully', pool });
+  logger.info('successfully synced pool', pool);
+  res.status(200).json({ message: 'pool synced successfully' });
 };

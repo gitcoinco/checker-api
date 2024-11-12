@@ -1,7 +1,7 @@
 import { type MigrationInterface, type QueryRunner } from 'typeorm';
 
-export class InitMigration1731392949883 implements MigrationInterface {
-  name = 'InitMigration1731392949883';
+export class InitMigration1731395428713 implements MigrationInterface {
+  name = 'InitMigration1731395428713';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -20,7 +20,7 @@ export class InitMigration1731392949883 implements MigrationInterface {
       `CREATE TABLE "evaluation_question" ("id" SERIAL NOT NULL, "questionIndex" integer NOT NULL, "question" character varying NOT NULL, "poolId" integer NOT NULL, CONSTRAINT "UQ_bd9653bd57844a98c0863a0a5b8" UNIQUE ("poolId", "questionIndex"), CONSTRAINT "PK_6ecc0e6614b9c4bc65c6de2c021" PRIMARY KEY ("id"))`
     );
     await queryRunner.query(
-      `CREATE TABLE "pool" ("id" SERIAL NOT NULL, "chainId" integer NOT NULL, "poolId" character varying NOT NULL, CONSTRAINT "UQ_4baed6f91c467f39863309e6785" UNIQUE ("chainId", "poolId"), CONSTRAINT "PK_db1bfe411e1516c01120b85f8fe" PRIMARY KEY ("id"))`
+      `CREATE TABLE "pool" ("id" SERIAL NOT NULL, "chainId" integer NOT NULL, "alloPoolId" character varying NOT NULL, CONSTRAINT "UQ_72fcaa655b2b7348f4feaf25ea3" UNIQUE ("chainId", "alloPoolId"), CONSTRAINT "PK_db1bfe411e1516c01120b85f8fe" PRIMARY KEY ("id"))`
     );
     await queryRunner.query(
       `ALTER TABLE "application" ADD CONSTRAINT "FK_a2d1c7a2c6ee681b42112d41284" FOREIGN KEY ("poolId") REFERENCES "pool"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`

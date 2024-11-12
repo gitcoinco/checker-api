@@ -1,6 +1,7 @@
 import { applicationRepository } from '@/repository';
 import { Application } from '@/entity/Application';
 import profileService from './ProfileService';
+import poolService from './PoolService';
 
 class ApplicationService {
   async createApplication(
@@ -16,12 +17,12 @@ class ApplicationService {
   }
 
   async getApplicationsByPoolId(
-    poolId: string,
+    alloPoolId: string,
     chainId: number
   ): Promise<Application[]> {
     const applications = await applicationRepository.find({
       where: {
-        pool: { poolId },
+        pool: { alloPoolId },
         chainId,
       },
       relations: ['pool'],
@@ -30,15 +31,24 @@ class ApplicationService {
   }
 
   async upsertApplicationsForPool(
-    poolId: string,
+    alloPoolId: string,
     chainId: number,
     applicationData: Array<{ applicationId: string; profileId: string }>
   ): Promise<Application[]> {
     const existingApplications = await this.getApplicationsByPoolId(
-      poolId,
+      alloPoolId,
       chainId
     );
-    const pool = existingApplications[0]?.pool;
+
+    const pool = await poolService.getPoolByPoolIdAndChainId(
+      chainId,
+      alloPoolId
+    );
+    if (pool == null) {
+      throw new Error(
+        `Pool not found for chainId: ${chainId}, alloPoolId: ${alloPoolId}`
+      );
+    }
 
     const newApplications = await Promise.all(
       applicationData

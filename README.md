@@ -75,7 +75,6 @@ router.post('/pools', syncPool);
 
 # Nice to have
 router.post('/evaluation-questions', createEvaluationQuestions);
-router.post('/pools/auto', autoCreatePools);
 router.post('/pools/:poolId/applications/auto', autoCreateApplication);
 POST: /pools/:chainId/pools/:poolId/applications/:applicationId/review
 ```

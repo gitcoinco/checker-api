@@ -61,6 +61,7 @@ export interface RoundWithApplications {
     metadata: ProjectMetadata;
     metadataCid: string;
     status: Status;
+    projectId: string;
     project: {
       metadata: ProjectMetadata;
       metadataCid: string;
