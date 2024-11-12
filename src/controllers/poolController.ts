@@ -6,7 +6,7 @@ import { indexer } from '@/ext/indexer';
 import applicationService from '@/service/ApplicationService';
 import { requestEvaluation, requestEvaluationQuestions } from '@/ext/openai';
 import evaluationQuestionService from '@/service/EvaluationQuestionService';
-import evaluationService from '@/service/Evaluation';
+import evaluationService from '@/service/EvaluationService';
 import { EVALUATOR_TYPE } from '@/entity/Evaluation';
 
 const logger = createLogger();

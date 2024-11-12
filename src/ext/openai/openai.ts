@@ -6,7 +6,7 @@ import {
   type PromptEvaluationQuestions,
 } from './prompt';
 import { createLogger } from '@/logger';
-import { type EvaluationSummaryInput } from '@/service/Evaluation';
+import { type EvaluationSummaryInput } from '@/service/EvaluationService';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,

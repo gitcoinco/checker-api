@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import evaluationService, {
   type CreateEvaluationParams,
-} from '@/service/Evaluation';
+} from '@/service/EvaluationService';
 import { catchError, validateRequest } from '@/utils';
 import { createLogger } from '@/logger';
 import { EVALUATOR_TYPE } from '@/entity/Evaluation';
