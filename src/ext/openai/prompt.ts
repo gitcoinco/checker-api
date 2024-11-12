@@ -1,18 +1,6 @@
 import type { ApplicationMetadata, RoundMetadata } from '../indexer';
 
-export interface PromptEvaluationResult {
-  score: number;
-  feedback: string;
-}
-
 export type PromptEvaluationQuestions = string[];
-
-// const essentialProjectFields: Array<keyof ProjectMetadata> = [
-//   'title',
-//   'description',
-//   'website',
-//   'owners',
-// ];
 
 const essentialRoundFields: Array<keyof RoundMetadata> = [
   'name',
@@ -24,58 +12,77 @@ const essentialApplicationFields: Array<keyof ApplicationMetadata> = [
   'application',
 ];
 
-// const sanitizeProjectMetadata = (metadata: ProjectMetadata): string => {
-//   const sanitizedMetadata = {};
+// Function to remove every nth character from a string
+const removeEveryNthChar = (str: string, n: number): string => {
+  return str
+    .split('')
+    .filter((_, index) => (index + 1) % n !== 0)
+    .join('');
+};
 
-//   essentialProjectFields.forEach(field => {
-//     if (metadata[field] !== undefined) {
-//       sanitizedMetadata[field] = metadata[field];
-//     }
-//   });
-
-//   return JSON.stringify(sanitizedMetadata, null, 2);
-// };
-
-const sanitizeRoundMetadata = (metadata: RoundMetadata): string => {
+// Function to sanitize metadata and then remove every nth character to fit a max length
+const sanitizeAndReduceMetadata = (
+  metadata: object,
+  essentialFields: string[],
+  maxLength: number
+): string => {
   const sanitizedMetadata = {};
 
-  essentialRoundFields.forEach(field => {
+  essentialFields.forEach(field => {
     if (metadata[field] !== undefined) {
       sanitizedMetadata[field] = metadata[field];
     }
   });
 
-  return JSON.stringify(sanitizedMetadata, null, 2);
+  let jsonString = JSON.stringify(sanitizedMetadata, null, 2);
+
+  // Remove every nth character if the JSON string exceeds maxLength
+  while (jsonString.length > maxLength) {
+    const n = Math.ceil(jsonString.length / maxLength);
+    jsonString = removeEveryNthChar(jsonString, n);
+  }
+
+  return jsonString;
+};
+
+const sanitizeRoundMetadata = (metadata: RoundMetadata): string => {
+  return sanitizeAndReduceMetadata(metadata, essentialRoundFields, 1000);
 };
 
 const sanitizeApplicationMetadata = (metadata: ApplicationMetadata): string => {
-  const sanitizedApplicationMetadata = {};
-
-  essentialApplicationFields.forEach(field => {
-    if (metadata[field] !== undefined) {
-      sanitizedApplicationMetadata[field] = metadata[field];
-    }
-  });
-
-  return JSON.stringify(sanitizedApplicationMetadata, null, 2);
+  return sanitizeAndReduceMetadata(metadata, essentialApplicationFields, 1000);
 };
 
 export const createAiEvaluationPrompt = (
   roundMetadata: RoundMetadata,
-  applicationMetadata: ApplicationMetadata
+  applicationMetadata: ApplicationMetadata,
+  applicationQuestions: PromptEvaluationQuestions
 ): string => {
   const sanitizedRoundMetadata = sanitizeRoundMetadata(roundMetadata);
   const sanitizedApplicationMetadata =
     sanitizeApplicationMetadata(applicationMetadata);
 
+  const questionsString = applicationQuestions
+    .map((q, index) => `${index + 1}. ${q}`)
+    .join('\n');
+
   return `Evaluate the following application based on the round metadata and project metadata:
   round: ${sanitizedRoundMetadata}, 
   project: ${sanitizedApplicationMetadata}
+
+  Please answer the following questions to evaluate the application:
+  ${questionsString}
   
   Please respond with ONLY the following JSON structure and NOTHING else:
   {
-    "score": number, // a number between 0 and 100
-    "feedback": string
+    "questions": [
+      {
+        "questionIndex": number, // index of the question from the provided list (starting from 0)
+        "answerEnum": number // 0 for "yes", 1 for "no", 2 for "uncertain"
+      },
+      ...
+    ],
+    "summary": string // a brief summary of the evaluation
   }`;
 };
 

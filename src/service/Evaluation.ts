@@ -4,15 +4,15 @@ import {
   evaluationQuestionRepository,
   evaluationRepository,
 } from '@/repository';
-import { type AnswerType } from '@/entity/EvaluationAnswer';
+import { toAnswerType } from '@/entity/EvaluationAnswer';
 import evaluationAnswerService from './EvaluationAnswerService';
 
 interface EvaluationAnswerInput {
   questionIndex: number;
-  answerEnum: AnswerType;
+  answerEnum: number;
 }
 
-interface EvaluationSummaryInput {
+export interface EvaluationSummaryInput {
   questions: EvaluationAnswerInput[];
   summary: string;
 }
@@ -40,12 +40,22 @@ class EvaluationService {
       throw new Error('Application not found');
     }
 
+    // Calculate the evaluator score
+    let totalScore = 0;
+    for (const question of questions) {
+      totalScore += question.answerEnum;
+    }
+
+    // Normalize the score to be between 0 and 100
+    const maxPossibleScore = questions.length * 2; // Each question can contribute a maximum of 2 points (uncertain)
+    const evaluatorScore = (1 - totalScore / maxPossibleScore) * 100;
+
     // Create the Evaluation
     const evaluation = await this.createEvaluation({
       evaluator,
       evaluatorType,
       summary,
-      evaluatorScore: 0, // Calculate or set this as needed
+      evaluatorScore,
       metadataCid: cid,
       applicationId: application.id,
       application,
@@ -65,7 +75,7 @@ class EvaluationService {
       await evaluationAnswerService.createEvaluationAnswer(
         evaluation.id,
         evaluationQuestion.id,
-        question.answerEnum
+        toAnswerType(question.answerEnum)
       );
     }
 

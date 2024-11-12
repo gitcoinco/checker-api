@@ -15,6 +15,19 @@ export enum AnswerType {
   UNCERTAIN = 'uncertain',
 }
 
+export const toAnswerType = (value: number): AnswerType => {
+  const mapping: Record<number, AnswerType> = {
+    0: AnswerType.YES,
+    1: AnswerType.NO,
+    2: AnswerType.UNCERTAIN,
+  };
+
+  if (mapping[value] !== undefined) {
+    return mapping[value];
+  }
+  throw new Error(`Invalid value for AnswerType: ${value}`);
+};
+
 @Entity()
 @Unique(['evaluationId', 'evaluationQuestionId'])
 export class EvaluationAnswer {

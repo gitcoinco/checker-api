@@ -4,9 +4,9 @@ import {
   createAiEvaluationPrompt,
   createEvaluationQuestionPrompt,
   type PromptEvaluationQuestions,
-  type PromptEvaluationResult,
 } from './prompt';
 import { createLogger } from '@/logger';
+import { type EvaluationSummaryInput } from '@/service/Evaluation';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -19,7 +19,7 @@ const queryOpenAI = async (prompt: string): Promise<string> => {
     const response = await openai.completions.create({
       model: 'gpt-3.5-turbo-instruct',
       prompt,
-      max_tokens: 150,
+      max_tokens: 250,
       temperature: 0.7,
     });
 
@@ -39,14 +39,18 @@ const queryOpenAI = async (prompt: string): Promise<string> => {
 
 export const requestEvaluation = async (
   roundMetadata: RoundMetadata,
-  applicationMetadata: ApplicationMetadata
-): Promise<PromptEvaluationResult> => {
+  applicationMetadata: ApplicationMetadata,
+  questions: PromptEvaluationQuestions
+): Promise<EvaluationSummaryInput> => {
   const prompt: string = createAiEvaluationPrompt(
     roundMetadata,
-    applicationMetadata
+    applicationMetadata,
+    questions
   );
   const result = await queryOpenAI(prompt);
-  logger.info('Application evaluation complete', { result });
+  console.log('===> 5');
+  console.log(result);
+  // logger.info('Application evaluation complete', { result });
   return JSON.parse(result);
 };
 
