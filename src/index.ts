@@ -1,5 +1,6 @@
 // Load environment variables from .env file before other imports
 import dotenv from 'dotenv';
+dotenv.config();
 
 import express, {
   type Request,
@@ -13,8 +14,7 @@ import { AppDataSource } from '@/data-source';
 import routes from '@/routes';
 import { createLogger } from '@/logger';
 import { postgraphileMiddleware } from '@/postgraphile.config';
-import { BaseError } from './errors';
-dotenv.config();
+import { BaseError } from '@/errors';
 
 // Configure process-level error handlers before app initialization
 process.on('unhandledRejection', (reason: any) => {
