@@ -26,7 +26,7 @@ class ApplicationService {
         pool: { alloPoolId },
         chainId,
       },
-      relations: ['pool'],
+      relations: { pool: true },
     });
     return applications;
   }

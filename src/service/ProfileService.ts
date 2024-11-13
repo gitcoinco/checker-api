@@ -24,7 +24,7 @@ class ProfileService {
   async getApplicationsByProfileId(profileId: string): Promise<Application[]> {
     const profile = await profileRepository.findOne({
       where: { profileId },
-      relations: ['applications'],
+      relations: { applications: true },
     });
 
     if (profile != null) {
