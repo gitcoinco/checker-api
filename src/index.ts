@@ -1,7 +1,11 @@
 // Load environment variables from .env file before other imports
 import dotenv from 'dotenv';
 
-import express from 'express';
+import express, {
+  type Request,
+  type Response,
+  type NextFunction,
+} from 'express';
 import swaggerJsDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import swaggerOptions from '@/swagger';
@@ -9,7 +13,19 @@ import { AppDataSource } from '@/data-source';
 import routes from '@/routes';
 import { createLogger } from '@/logger';
 import { postgraphileMiddleware } from '@/postgraphile.config';
+import { BaseError } from './errors';
 dotenv.config();
+
+// Configure process-level error handlers before app initialization
+process.on('unhandledRejection', (reason: any) => {
+  logger.error('Unhandled Promise Rejection:', { error: reason });
+});
+
+process.on('uncaughtException', (error: Error) => {
+  logger.error('Uncaught Exception:', { error });
+  // Give the process time to log the error before exiting
+  setTimeout(() => process.exit(1), 1000);
+});
 
 // Initialize Express app
 const app = express();
@@ -28,6 +44,29 @@ app.use(postgraphileMiddleware);
 
 // Configure JSON body parser
 app.use(express.json());
+
+// Configure global error handling
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  if (err instanceof BaseError) {
+    res.status(err.statusCode).json({
+      name: err.name,
+      message: err.message,
+      status: err.statusCode,
+    });
+  } else {
+    logger.error('Unhandled error:', {
+      error: err,
+      stack: err.stack,
+      path: req.path,
+      method: req.method,
+    });
+    res.status(500).json({
+      name: 'InternalServerError',
+      message: 'An unexpected error occurred',
+      status: 500,
+    });
+  }
+});
 
 // Configure routes
 app.use('/api', routes);

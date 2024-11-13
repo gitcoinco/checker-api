@@ -1,6 +1,7 @@
 import { profileRepository } from '@/repository';
 import { type Application } from '@/entity/Application';
 import { Profile } from '@/entity/Profile';
+import { NotFoundError } from '@/errors';
 
 class ProfileService {
   async createProfile(profileId: string): Promise<Profile> {
@@ -29,7 +30,7 @@ class ProfileService {
     if (profile != null) {
       return profile.applications;
     } else {
-      throw new Error(`Profile with ID ${profileId} not found`);
+      throw new NotFoundError(`Profile with ID ${profileId} not found`);
     }
   }
 }

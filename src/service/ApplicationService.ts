@@ -2,6 +2,7 @@ import { applicationRepository } from '@/repository';
 import { Application } from '@/entity/Application';
 import profileService from './ProfileService';
 import poolService from './PoolService';
+import { NotFoundError } from '@/errors';
 
 class ApplicationService {
   async createApplication(
@@ -45,7 +46,7 @@ class ApplicationService {
       alloPoolId
     );
     if (pool == null) {
-      throw new Error(
+      throw new NotFoundError(
         `Pool not found for chainId: ${chainId}, alloPoolId: ${alloPoolId}`
       );
     }
