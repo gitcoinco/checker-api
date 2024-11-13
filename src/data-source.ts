@@ -1,8 +1,8 @@
 import { DataSource } from 'typeorm';
 
 // Set default values for environment variables
-const synchronize = Boolean(process.env.SYNCHRONIZE) || false;
-const logging = Boolean(process.env.LOGGING) || false;
+const synchronize = process.env.SYNCHRONIZE?.toLowerCase() === 'true';
+const logging = process.env.LOGGING?.toLowerCase() === 'true';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
