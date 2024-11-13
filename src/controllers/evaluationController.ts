@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { createLogger } from '@/logger';
-import { indexer } from '@/ext/indexer';
+import { indexerClient } from '@/ext/indexer';
 import { requestEvaluation } from '@/ext/openai';
 import { validateRequest } from '@/utils';
 
@@ -19,7 +19,7 @@ export const evaluateApplication = async (
   );
 
   try {
-    const application = await indexer.getApplication({
+    const application = await indexerClient.getApplication({
       roundId: poolId,
       chainId: parseInt(chainId, 10),
       applicationId,

@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import poolService from '@/service/PoolService';
 import { catchError, validateRequest } from '@/utils';
 import { createLogger } from '@/logger';
-import { indexer } from '@/ext/indexer';
+import { indexerClient } from '@/ext/indexer';
 import applicationService from '@/service/ApplicationService';
 
 const logger = createLogger();
@@ -22,7 +22,7 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
   );
 
   const [errorFetching, poolData] = await catchError(
-    indexer.getRoundWithApplications({
+    indexerClient.getRoundWithApplications({
       chainId,
       roundId: alloPoolId,
     })
