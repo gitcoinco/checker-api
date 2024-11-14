@@ -27,14 +27,14 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
     `Received update request for chainId: ${chainId}, alloPoolId: ${alloPoolId}`
   );
 
-  const [errorFetching, poolData] = await catchError(
+  const [errorFetching, indexerPoolData] = await catchError(
     indexerClient.getRoundWithApplications({
       chainId,
       roundId: alloPoolId,
     })
   );
 
-  if (errorFetching != null || poolData == null) {
+  if (errorFetching != null || indexerPoolData == null) {
     logger.warn(
       `No pool found for chainId: ${chainId}, alloPoolId: ${alloPoolId}`
     );
@@ -55,7 +55,7 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
   }
 
   const [evalError, evaluationQuestions] = await catchError(
-    requestEvaluationQuestions(poolData.roundMetadata)
+    requestEvaluationQuestions(indexerPoolData.roundMetadata)
   );
 
   if (evalError != null || evaluationQuestions == null) {
@@ -75,7 +75,7 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
     evaluationQuestions
   );
 
-  const applicationData = poolData.applications.map(application => ({
+  const applicationData = indexerPoolData.applications.map(application => ({
     alloApplicationId: application.id,
     profileId: application.projectId,
   }));
@@ -90,8 +90,8 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
   // Filter and limit applications to prepare for evaluation parameters
   let applicationsForLLMReview = insertedApplications
     .map(application =>
-      poolData.applications.find(
-        poolApp => poolApp.id === application.alloApplicationId
+      indexerPoolData.applications.find(
+        poolApplication => poolApplication.id === application.alloApplicationId
       )
     )
     .filter(poolApplication => poolApplication !== undefined); // Removes any undefined results
@@ -108,13 +108,13 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
       alloApplicationId: poolApplication.id,
       cid: poolApplication.metadataCid,
       evaluator: addressFrom(1),
-      roundMetadata: poolData.roundMetadata,
+      roundMetadata: indexerPoolData.roundMetadata,
       applicationMetadata: poolApplication.metadata,
       questions: evaluationQuestions,
     }));
 
   if (evaluationParamsArray.length !== insertedApplications.length) {
-    logger.warn('Some applications were not found in poolData');
+    logger.warn('Some applications were not found in indexerPoolData');
   }
 
   await createLLMEvaluations(evaluationParamsArray);
