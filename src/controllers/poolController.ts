@@ -105,7 +105,7 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
     applicationsForLLMReview.map(poolApplication => ({
       chainId,
       alloPoolId,
-      applicationId: poolApplication.id, // TODO: CHECK
+      alloApplicationId: poolApplication.id,
       cid: poolApplication.metadataCid,
       evaluator: addressFrom(1),
       roundMetadata: poolData.roundMetadata,

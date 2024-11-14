@@ -47,7 +47,7 @@ class EvaluationService {
     const { questions, summary } = summaryInput;
 
     const application =
-      await applicationService.getApplicationByPoolIdAndApplicationId(
+      await applicationService.getApplicationByAlloPoolIdAndAlloApplicationId(
         alloPoolId,
         chainId,
         alloApplicationId

@@ -121,7 +121,7 @@ export const createEvaluation = async (
 export interface CreateLLMEvaluationParams {
   chainId: number;
   alloPoolId: string;
-  applicationId: string;
+  alloApplicationId: string;
   cid: string;
   evaluator: string;
   roundMetadata?: RoundMetadata;
@@ -181,14 +181,14 @@ export const createLLMEvaluations = async (
       }
 
       const application = round.applications.find(
-        app => app.id === params.applicationId
+        app => app.id === params.alloApplicationId
       );
       if (application == null) {
         logger.error(
-          `Application with ID: ${params.applicationId} not found in round`
+          `Application with ID: ${params.alloApplicationId} not found in round`
         );
         throw new NotFoundError(
-          `Application with ID: ${params.applicationId} not found in round`
+          `Application with ID: ${params.alloApplicationId} not found in round`
         );
       }
 

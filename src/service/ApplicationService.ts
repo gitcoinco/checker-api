@@ -32,7 +32,7 @@ class ApplicationService {
     return applications;
   }
 
-  async getApplicationByPoolIdAndApplicationId(
+  async getApplicationByAlloPoolIdAndAlloApplicationId(
     alloPoolId: string,
     chainId: number,
     alloApplicationId: string
