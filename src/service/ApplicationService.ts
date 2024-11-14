@@ -4,6 +4,7 @@ import profileService from './ProfileService';
 import poolService from './PoolService';
 import { In } from 'typeorm';
 import { NotFoundError } from '@/errors';
+import { EVALUATOR_TYPE } from '@/entity/Evaluation';
 
 class ApplicationService {
   async createApplication(
@@ -47,6 +48,25 @@ class ApplicationService {
     });
 
     return application;
+  }
+
+  async getApplicationsWithoutLLMEvalutionsByAlloPoolId(
+    alloPoolId: string,
+    chainId: number
+  ): Promise<Application[]> {
+    return await applicationRepository
+      .createQueryBuilder('application')
+      .leftJoinAndSelect('application.pool', 'pool')
+      .leftJoinAndSelect('application.evaluations', 'evaluation')
+      .where('pool.alloPoolId = :alloPoolId', { alloPoolId })
+      .andWhere('pool.chainId = :chainId', { chainId })
+      .andWhere(
+        'evaluation.id IS NULL OR evaluation.evaluatorType != :evaluatorType',
+        {
+          evaluatorType: EVALUATOR_TYPE.LLM_GPT3,
+        }
+      )
+      .getMany();
   }
 
   async upsertApplicationsForPool(

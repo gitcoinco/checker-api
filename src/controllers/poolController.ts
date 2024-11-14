@@ -2,9 +2,15 @@ import type { Request, Response } from 'express';
 import poolService from '@/service/PoolService';
 import { addressFrom, catchError, validateRequest } from '@/utils';
 import { createLogger } from '@/logger';
-import { indexerClient } from '@/ext/indexer';
+import {
+  indexerClient,
+  type RoundWithApplications as IndexerRoundWithApplications,
+} from '@/ext/indexer';
 import applicationService from '@/service/ApplicationService';
-import { requestEvaluationQuestions } from '@/ext/openai';
+import {
+  type PromptEvaluationQuestions,
+  requestEvaluationQuestions,
+} from '@/ext/openai';
 import evaluationQuestionService from '@/service/EvaluationQuestionService';
 import {
   type CreateLLMEvaluationParams,
@@ -80,15 +86,36 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
     profileId: application.projectId,
   }));
 
-  const insertedApplications =
-    await applicationService.upsertApplicationsForPool(
-      alloPoolId,
-      chainId,
-      applicationData
-    );
+  await applicationService.upsertApplicationsForPool(
+    alloPoolId,
+    chainId,
+    applicationData
+  );
 
+  await triggerLLMEvaluationByPool(
+    alloPoolId,
+    chainId,
+    indexerPoolData,
+    evaluationQuestions
+  );
+
+  logger.info('successfully synced pool', pool);
+  res.status(200).json({ message: 'pool synced successfully' });
+};
+
+const triggerLLMEvaluationByPool = async (
+  alloPoolId: string,
+  chainId: number,
+  indexerPoolData: IndexerRoundWithApplications,
+  evaluationQuestions: PromptEvaluationQuestions
+): Promise<void> => {
+  const applicationsWithoutLLM =
+    await applicationService.getApplicationsWithoutLLMEvalutionsByAlloPoolId(
+      alloPoolId,
+      chainId
+    );
   // Filter and limit applications to prepare for evaluation parameters
-  let applicationsForLLMReview = insertedApplications
+  let applicationsForLLMReview = applicationsWithoutLLM
     .map(application =>
       indexerPoolData.applications.find(
         poolApplication => poolApplication.id === application.alloApplicationId
@@ -113,12 +140,9 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
       questions: evaluationQuestions,
     }));
 
-  if (evaluationParamsArray.length !== insertedApplications.length) {
+  if (evaluationParamsArray.length !== applicationsWithoutLLM.length) {
     logger.warn('Some applications were not found in indexerPoolData');
   }
 
   await createLLMEvaluations(evaluationParamsArray);
-
-  logger.info('successfully synced pool', pool);
-  res.status(200).json({ message: 'pool synced successfully' });
 };
