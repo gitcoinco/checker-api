@@ -1,4 +1,7 @@
-import { evaluateApplication } from '@/controllers/evaluationController';
+import {
+  evaluateApplication,
+  triggerLLMEvaluation,
+} from '@/controllers/evaluationController';
 import { Router } from 'express';
 
 const router = Router();
@@ -87,5 +90,52 @@ const router = Router();
  *         description: "Internal Server Error"
  */
 router.post('/', evaluateApplication);
+
+/**
+ * @swagger
+ * /evaluate/llm:
+ *   post:
+ *     summary: "Trigger LLM Evaluation"
+ *     description: "This endpoint triggers a Large Language Model (LLM) based evaluation for a specified application pool and chain."
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               chainId:
+ *                 type: integer
+ *                 example: 42161
+ *               alloPoolId:
+ *                 type: string
+ *                 example: "609"
+ *               alloApplicationId:
+ *                 type: string
+ *                 example: "1"
+ *             example:
+ *               chainId: 42161
+ *               alloPoolId: "609"
+ *               alloApplicationId: "1"
+ *     responses:
+ *       200:
+ *         description: "LLM evaluation triggered successfully"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "LLM evaluation triggered successfully"
+ *                 evaluationId:
+ *                   type: string
+ *                   example: "evalLLM123456"
+ *       404:
+ *         description: "Application not found"
+ *       500:
+ *         description: "Internal Server Error"
+ */
+router.post('/llm', triggerLLMEvaluation);
 
 export default router;

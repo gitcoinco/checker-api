@@ -124,6 +124,67 @@ export interface CreateLLMEvaluationParams {
   questions?: PromptEvaluationQuestions;
 }
 
+interface PoolIdChainIdApplicationId {
+  alloPoolId: string;
+  chainId: number;
+  alloApplicationId: string;
+}
+
+export const triggerLLMEvaluation = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  validateRequest(req, res);
+
+  const { alloPoolId, chainId, alloApplicationId } =
+    req.body as PoolIdChainIdApplicationId;
+
+  const questions = await evaluationService.getQuestionsByChainAndAlloPoolId(
+    chainId,
+    alloPoolId
+  );
+
+  // ---- Fetch pool data from the indexer ----
+  const [errorFetching, indexerApplicationData] = await catchError(
+    indexerClient.getApplicationWithRound({
+      chainId,
+      roundId: alloPoolId,
+      applicationId: alloApplicationId,
+    })
+  );
+
+  // Handle errors or missing data from the indexer
+  if (errorFetching != null || indexerApplicationData == null) {
+    logger.warn(
+      `No pool found for chainId: ${chainId}, alloPoolId: ${alloPoolId}`
+    );
+    res.status(404).json({ message: 'Pool not found on indexer' });
+    throw new NotFoundError(`Pool not found on indexer`);
+  }
+
+  const data: CreateLLMEvaluationParams = {
+    chainId,
+    alloPoolId,
+    alloApplicationId,
+    cid: indexerApplicationData.metadataCid,
+    evaluator: EVALUATOR_TYPE.LLM_GPT3,
+    roundMetadata: indexerApplicationData.round.roundMetadata,
+    applicationMetadata: indexerApplicationData.metadata,
+    questions,
+  };
+
+  try {
+    await createLLMEvaluations([data]);
+    res.status(200).json({ message: 'LLM evaluation triggered successfully' });
+  } catch (error) {
+    logger.error('Failed to create evaluations:', error);
+    res.status(500).json({
+      message: 'Failed to create evaluations',
+      error: error.message,
+    });
+  }
+};
+
 export const createLLMEvaluations = async (
   paramsArray: CreateLLMEvaluationParams[]
 ): Promise<void> => {

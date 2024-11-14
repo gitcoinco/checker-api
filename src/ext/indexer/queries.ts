@@ -24,29 +24,17 @@ export const getRoundWithApplications = gql`
   }
 `;
 
-export const getRoundWithSingleApplication = gql`
+export const getApplicationWithRound = gql`
   query RoundApplication(
     $chainId: Int!
     $roundId: String!
     $applicationId: String!
   ) {
-    rounds(
-      filter: { chainId: { equalTo: $chainId }, id: { equalTo: $roundId } }
-    ) {
-      chainId
-      id
-      roundMetadata
-      roundMetadataCid
-      applications(filter: { id: { equalTo: $applicationId } }) {
-        id
-        metadata
-        metadataCid
-        status
-        projectId
-        project: canonicalProject {
-          metadata
-          metadataCid
-        }
+    application(chainId: $chainId, roundId: $roundId, id: $applicationId) {
+      metadata
+      metadataCid
+      round {
+        roundMetadata
       }
     }
   }
