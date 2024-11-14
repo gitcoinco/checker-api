@@ -12,6 +12,7 @@ import {
 } from './queries';
 import type { Logger } from 'winston';
 import { IsNullError } from '@/errors';
+import { env } from '@/env';
 
 class IndexerClient {
   private static instance: IndexerClient | null = null;
@@ -19,7 +20,7 @@ class IndexerClient {
   private readonly logger: Logger;
 
   private constructor() {
-    this.indexerEndpoint = process.env.INDEXER_URL ?? '';
+    this.indexerEndpoint = env.INDEXER_URL ?? '';
 
     if (this.indexerEndpoint === '') {
       throw new IsNullError('INDEXER_URL is not set');

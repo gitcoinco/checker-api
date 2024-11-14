@@ -1,11 +1,9 @@
+import { env } from './env';
 import { postgraphile } from 'postgraphile';
 import ConnectionFilterPlugin from 'postgraphile-plugin-connection-filter';
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
-import dotenv from 'dotenv';
 
-dotenv.config();
-
-const DATABASE_URL = `postgres://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_DATABASE}`;
+const DATABASE_URL = `postgres://${env.DB_USERNAME}:${env.DB_PASSWORD}@${env.DB_HOST}:${env.DB_PORT}/${env.DB_DATABASE}`;
 
 export const postgraphileMiddleware = postgraphile(DATABASE_URL, 'public', {
   subscriptions: true,

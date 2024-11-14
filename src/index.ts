@@ -1,7 +1,4 @@
-// Load environment variables from .env file before other imports
-import dotenv from 'dotenv';
-dotenv.config();
-
+import { env } from './env';
 import express, {
   type Request,
   type Response,
@@ -80,7 +77,7 @@ AppDataSource.initialize()
     logger.error('Error connecting to database:', { error });
   });
 
-const port = Number(process.env.PORT ?? 3000);
+const port = Number(env.PORT ?? 3000);
 
 // Start the server
 app.listen(port, () => {

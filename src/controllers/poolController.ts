@@ -19,6 +19,7 @@ import {
 } from './evaluationController';
 import { type Pool } from '@/entity/Pool';
 import { IsNullError, NotFoundError } from '@/errors';
+import { env } from '@/env';
 
 const logger = createLogger();
 
@@ -185,8 +186,8 @@ const triggerLLMEvaluationByPool = async (
     )
     .filter(poolApplication => poolApplication !== undefined); // Removes any undefined results
 
-  if (process.env.NODE_ENV === 'development') {
-    applicationsForLLMReview = applicationsForLLMReview.slice(0, 2); // Limit to first 2 applications in dev
+  if (env.NODE_ENV === 'development') {
+    applicationsForLLMReview = applicationsForLLMReview.slice(0, 5); // Limit to first 2 applications in dev
   }
 
   // Map filtered applications to evaluation parameters
