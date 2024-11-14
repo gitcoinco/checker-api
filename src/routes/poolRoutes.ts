@@ -23,6 +23,10 @@ const router = Router();
  *                 type: number
  *                 description: The chain ID associated with the pool
  *                 example: 42161  # Example of chainId (Arbitrum)
+ *               skipEvaluation:
+ *                type: boolean
+ *                description: Skip evaluation of the pool
+ *                example: true
  *             required:
  *               - alloPoolId
  *               - chainId
@@ -38,6 +42,7 @@ const router = Router();
  *         - value:
  *             alloPoolId: "609"
  *             chainId: "42161"
+ *             skipEvaluation: true
  */
 router.post('/', syncPool);
 
