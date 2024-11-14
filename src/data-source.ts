@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import dotenv from 'dotenv';
+import dotenv from 'dotenv'; // data source init doesn't work without this
 dotenv.config();
 
 // Set default values for environment variables
