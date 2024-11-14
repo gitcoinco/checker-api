@@ -4,7 +4,7 @@ import poolRoutes from '@/routes/poolRoutes';
 
 const router = Router();
 
-router.use('/evaluations', evaluationRoutes);
-router.use('/pools', poolRoutes); // TODO: should we remove this ?
+router.use('/evaluate', evaluationRoutes);
+router.use('/pools', poolRoutes);
 
 export default router;

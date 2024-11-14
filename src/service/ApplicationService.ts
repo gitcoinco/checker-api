@@ -2,6 +2,7 @@ import { applicationRepository } from '@/repository';
 import { Application } from '@/entity/Application';
 import profileService from './ProfileService';
 import poolService from './PoolService';
+import { In } from 'typeorm';
 import { NotFoundError } from '@/errors';
 
 class ApplicationService {
@@ -41,7 +42,7 @@ class ApplicationService {
       chainId
     );
 
-    const pool = await poolService.getPoolByPoolIdAndChainId(
+    const pool = await poolService.getPoolByChainIdAndAlloPoolId(
       chainId,
       alloPoolId
     );
@@ -79,6 +80,51 @@ class ApplicationService {
     );
 
     return await this.createApplications(newApplications);
+  }
+
+  async getEvaluationsByPoolId(
+    alloPoolId: string,
+    chainId: number
+  ): Promise<Application[]> {
+    const applications = await this.getApplicationsByPoolId(
+      alloPoolId,
+      chainId
+    );
+    return applications;
+  }
+
+  async getApplicationByChainIdPoolIdApplicationId(
+    alloPoolId: string,
+    chainId: number,
+    applicationId: string
+  ): Promise<Application | null> {
+    const application = await applicationRepository.findOne({
+      where: {
+        pool: { alloPoolId },
+        chainId,
+        applicationId,
+      },
+      relations: ['pool'],
+    });
+
+    return application;
+  }
+
+  async getApplicationsByChainIdPoolIdApplicationIds(
+    alloPoolId: string,
+    chainId: number,
+    applicationIdArray: string[]
+  ): Promise<Application[]> {
+    const applications = await applicationRepository.find({
+      where: {
+        pool: { alloPoolId },
+        chainId,
+        applicationId: In(applicationIdArray),
+      },
+      relations: ['pool'],
+    });
+
+    return applications;
   }
 }
 

@@ -11,7 +11,7 @@ class PoolService {
     return pool;
   }
 
-  async getPoolByPoolIdAndChainId(
+  async getPoolByChainIdAndAlloPoolId(
     chainId: number,
     alloPoolId: string
   ): Promise<Pool | null> {
@@ -22,7 +22,7 @@ class PoolService {
   }
 
   async upsertPool(chainId: number, alloPoolId: string): Promise<Pool> {
-    let pool = await this.getPoolByPoolIdAndChainId(chainId, alloPoolId);
+    let pool = await this.getPoolByChainIdAndAlloPoolId(chainId, alloPoolId);
     if (pool == null) {
       pool = await this.savePool({
         chainId,

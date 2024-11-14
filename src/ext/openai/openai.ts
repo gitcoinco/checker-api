@@ -1,7 +1,12 @@
 import OpenAI from 'openai';
-import type { Application } from '../indexer';
-import { createPrompt, type EvaluationResult } from './prompt';
+import type { ApplicationMetadata, RoundMetadata } from '@/ext/indexer';
+import type { PromptEvaluationQuestions } from '@/ext/openai/types';
+import {
+  createAiEvaluationPrompt,
+  createEvaluationQuestionPrompt,
+} from '@/ext/openai/prompt';
 import { createLogger } from '@/logger';
+import { type EvaluationSummaryInput } from '@/service/EvaluationService';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -9,16 +14,12 @@ const openai = new OpenAI({
 
 const logger = createLogger();
 
-export const requestEvaluation = async (
-  application: Application
-): Promise<EvaluationResult> => {
+const queryOpenAI = async (prompt: string): Promise<string> => {
   try {
-    logger.debug(`Evaluating application with ID: ${application.id}`);
-
     const response = await openai.completions.create({
       model: 'gpt-3.5-turbo-instruct',
-      prompt: createPrompt(application),
-      max_tokens: 150,
+      prompt,
+      max_tokens: 250,
       temperature: 0.7,
     });
 
@@ -27,14 +28,39 @@ export const requestEvaluation = async (
       JSON.stringify(response, null, 2)
     );
 
-    const result: EvaluationResult = JSON.parse(
-      response.choices[0].text.trim()
-    );
+    const result = response.choices[0].text.trim();
 
-    logger.info('Application evaluation complete', { result });
     return result;
   } catch (error) {
     logger.error('Error calling OpenAI API:', { error });
     throw error;
   }
+};
+
+export const requestEvaluation = async (
+  roundMetadata: RoundMetadata,
+  applicationMetadata: ApplicationMetadata,
+  questions: PromptEvaluationQuestions
+): Promise<EvaluationSummaryInput> => {
+  const prompt: string = createAiEvaluationPrompt(
+    roundMetadata,
+    applicationMetadata,
+    questions
+  );
+  const result = await queryOpenAI(prompt);
+  logger.info('Application evaluation complete', { result });
+  return JSON.parse(result);
+};
+
+export const requestEvaluationQuestions = async (
+  roundMetadata: RoundMetadata
+): Promise<PromptEvaluationQuestions> => {
+  logger.debug('Requesting evaluation questions from OpenAI');
+  const prompt: string = createEvaluationQuestionPrompt(roundMetadata);
+  const result = await queryOpenAI(prompt);
+  logger.info('Received evaluation questions from OpenAI', { result });
+  return result
+    .split('\n')
+    .map(line => line.replace(/^\d+\.\s*/, '').trim())
+    .filter(line => line.length > 0);
 };

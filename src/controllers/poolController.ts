@@ -1,9 +1,15 @@
 import type { Request, Response } from 'express';
 import poolService from '@/service/PoolService';
-import { catchError, validateRequest } from '@/utils';
+import { addressFrom, catchError, validateRequest } from '@/utils';
 import { createLogger } from '@/logger';
 import { indexerClient } from '@/ext/indexer';
 import applicationService from '@/service/ApplicationService';
+import { requestEvaluationQuestions } from '@/ext/openai';
+import evaluationQuestionService from '@/service/EvaluationQuestionService';
+import {
+  type CreateLLMEvaluationParams,
+  createLLMEvaluations,
+} from './evaluationController';
 
 const logger = createLogger();
 
@@ -48,19 +54,64 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  // TODO: fetch questions from gpt
-  // evaluationQuestionService.resetEvaluationQuestions(chainId, alloPoolId, poolData.questions);
+  const [evalError, evaluationQuestions] = await catchError(
+    requestEvaluationQuestions(poolData.roundMetadata)
+  );
+
+  if (evalError != null || evaluationQuestions == null) {
+    logger.error(
+      `Error requesting evaluation questions: ${evalError?.message}`
+    );
+    res.status(500).json({
+      message: 'Error requesting evaluation questions',
+      error: evalError?.message,
+    });
+    return;
+  }
+
+  await evaluationQuestionService.resetEvaluationQuestions(
+    chainId,
+    alloPoolId,
+    evaluationQuestions
+  );
 
   const applicationData = poolData.applications.map(application => ({
     applicationId: application.id,
     profileId: application.projectId,
   }));
 
-  await applicationService.upsertApplicationsForPool(
-    alloPoolId,
-    chainId,
-    applicationData
-  );
+  const insertedApplications =
+    await applicationService.upsertApplicationsForPool(
+      alloPoolId,
+      chainId,
+      applicationData
+    );
+
+  if (pool !== undefined) {
+    const evaluationParamsArray: CreateLLMEvaluationParams[] =
+      insertedApplications
+        .map(application =>
+          poolData.applications.find(a => a.id === application.applicationId)
+        )
+        .filter(poolApplication => poolApplication !== undefined)
+        .slice(0, 10) // todo: remove dev limit
+        .map(poolApplication => ({
+          chainId,
+          alloPoolId,
+          applicationId: poolApplication.id,
+          cid: poolApplication.metadataCid,
+          evaluator: addressFrom(1),
+          roundMetadata: poolData.roundMetadata,
+          applicationMetadata: poolApplication.metadata,
+          questions: evaluationQuestions,
+        }));
+
+    if (evaluationParamsArray.length !== insertedApplications.length) {
+      logger.warn('Some applications were not found in poolData');
+    }
+
+    await createLLMEvaluations(evaluationParamsArray);
+  }
 
   logger.info('successfully synced pool', pool);
   res.status(200).json({ message: 'pool synced successfully' });
