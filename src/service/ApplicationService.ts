@@ -3,6 +3,7 @@ import { Application } from '@/entity/Application';
 import profileService from './ProfileService';
 import poolService from './PoolService';
 import { In } from 'typeorm';
+import { NotFoundError } from '@/errors';
 
 class ApplicationService {
   async createApplication(
@@ -26,7 +27,7 @@ class ApplicationService {
         pool: { alloPoolId },
         chainId,
       },
-      relations: ['pool'],
+      relations: { pool: true },
     });
     return applications;
   }
@@ -46,7 +47,7 @@ class ApplicationService {
       alloPoolId
     );
     if (pool == null) {
-      throw new Error(
+      throw new NotFoundError(
         `Pool not found for chainId: ${chainId}, alloPoolId: ${alloPoolId}`
       );
     }

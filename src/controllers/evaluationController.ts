@@ -12,7 +12,7 @@ import {
 } from '@/ext/openai';
 import {
   type ApplicationMetadata,
-  indexer,
+  indexerClient,
   type RoundMetadata,
   type RoundWithApplications,
 } from '@/ext/indexer';
@@ -162,7 +162,7 @@ export const createLLMEvaluations = async (
       } else {
         // Fetch the round and store it in the cache
         const [error, fetchedRound] = await catchError(
-          indexer.getRoundWithApplications({
+          indexerClient.getRoundWithApplications({
             chainId: params.chainId,
             roundId: params.alloPoolId,
           })
