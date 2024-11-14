@@ -34,8 +34,11 @@ class PoolService {
     return pool;
   }
 
-  async getAllPools(): Promise<Pool[]> {
-    return await poolRepository.find();
+  async getAllPools(page = 1, limit = 10): Promise<Pool[]> {
+    return await poolRepository.find({
+      skip: (page - 1) * limit,
+      take: limit,
+    });
   }
 }
 

@@ -8,8 +8,8 @@ import request from 'graphql-request';
 import { getApplication, getRoundWithApplications } from './queries';
 import type { Logger } from 'winston';
 
-class Indexer {
-  private static instance: Indexer | null = null;
+class IndexerClient {
+  private static instance: IndexerClient | null = null;
   private readonly indexerEndpoint: string;
   private readonly logger: Logger;
 
@@ -31,11 +31,11 @@ class Indexer {
     this.logger = createLogger('Indexer.ts');
   }
 
-  public static getInstance(): Indexer {
-    if (Indexer.instance === null) {
-      Indexer.instance = new Indexer();
+  public static getInstance(): IndexerClient {
+    if (IndexerClient.instance === null) {
+      IndexerClient.instance = new IndexerClient();
     }
-    return Indexer.instance;
+    return IndexerClient.instance;
   }
 
   async getApplication({
@@ -128,4 +128,4 @@ class Indexer {
   }
 }
 
-export const indexer = Indexer.getInstance();
+export const indexerClient = IndexerClient.getInstance();

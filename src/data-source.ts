@@ -1,11 +1,8 @@
 import { DataSource } from 'typeorm';
-import dotenv from 'dotenv';
 
-// Load environment variables from .env file
-dotenv.config();
 // Set default values for environment variables
-const synchronize = Boolean(process.env.SYNCHRONIZE) || false;
-const logging = Boolean(process.env.LOGGING) || false;
+const synchronize = process.env.SYNCHRONIZE?.toLowerCase() === 'true';
+const logging = process.env.LOGGING?.toLowerCase() === 'true';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -20,12 +17,3 @@ export const AppDataSource = new DataSource({
   migrations: ['src/migration/*.ts'],
   subscribers: ['src/subscriber/*.ts'],
 });
-
-// Initialize the data source
-AppDataSource.initialize()
-  .then(() => {
-    console.log('Data Source has been initialized!');
-  })
-  .catch(err => {
-    console.error('Error during Data Source initialization', err);
-  });
