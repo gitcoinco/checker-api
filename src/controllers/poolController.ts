@@ -5,6 +5,7 @@ import { createLogger } from '@/logger';
 import {
   indexerClient,
   type RoundWithApplications as IndexerRoundWithApplications,
+  type RoundMetadata as IndexerRoundMetadata,
 } from '@/ext/indexer';
 import applicationService from '@/service/ApplicationService';
 import {
@@ -16,7 +17,7 @@ import {
   type CreateLLMEvaluationParams,
   createLLMEvaluations,
 } from './evaluationController';
-
+import { type Pool } from '@/entity/Pool';
 const logger = createLogger();
 
 interface PoolIdChainId {
@@ -52,34 +53,25 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
     poolService.upsertPool(chainId, alloPoolId)
   );
 
-  if (error != null) {
-    logger.error(`Failed to upsert pool: ${error.message}`);
+  if (error != null || pool == null) {
+    logger.error(`Failed to upsert pool: ${error?.message}`);
     res
       .status(500)
-      .json({ message: 'Error upserting pool', error: error.message });
+      .json({ message: 'Error upserting pool', error: error?.message });
     return;
   }
 
-  const [evalError, evaluationQuestions] = await catchError(
-    requestEvaluationQuestions(indexerPoolData.roundMetadata)
+  const [evalQuestionsError, evaluationQuestions] = await catchError(
+    handlePoolEvaluationQuestions(pool, indexerPoolData.roundMetadata)
   );
 
-  if (evalError != null || evaluationQuestions == null) {
-    logger.error(
-      `Error requesting evaluation questions: ${evalError?.message}`
-    );
+  if (evalQuestionsError != null || evaluationQuestions == null) {
     res.status(500).json({
-      message: 'Error requesting evaluation questions',
-      error: evalError?.message,
+      message: 'Error handling evaluation questions',
+      error: evalQuestionsError?.message,
     });
     return;
   }
-
-  await evaluationQuestionService.resetEvaluationQuestions(
-    chainId,
-    alloPoolId,
-    evaluationQuestions
-  );
 
   const applicationData = indexerPoolData.applications.map(application => ({
     alloApplicationId: application.id,
@@ -101,6 +93,36 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
 
   logger.info('successfully synced pool', pool);
   res.status(200).json({ message: 'pool synced successfully' });
+};
+
+const handlePoolEvaluationQuestions = async (
+  pool: Pool,
+  poolMetadata: IndexerRoundMetadata
+): Promise<PromptEvaluationQuestions> => {
+  if (pool.questions.length > 0) {
+    return pool.questions.map(question => question.question);
+  }
+
+  const [evalError, evaluationQuestions] = await catchError(
+    requestEvaluationQuestions(poolMetadata)
+  );
+
+  if (evalError != null || evaluationQuestions == null) {
+    logger.error(
+      `Error requesting evaluation questions: ${evalError?.message}`
+    );
+    throw new Error(
+      `Error requesting evaluation questions ${evalError?.message}`
+    );
+  }
+
+  await evaluationQuestionService.resetEvaluationQuestions(
+    pool.chainId,
+    pool.alloPoolId,
+    evaluationQuestions
+  );
+
+  return evaluationQuestions;
 };
 
 const triggerLLMEvaluationByPool = async (
