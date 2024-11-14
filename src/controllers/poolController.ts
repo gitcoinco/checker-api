@@ -116,8 +116,14 @@ const handlePoolEvaluationQuestions = async (
   pool: Pool,
   poolMetadata: IndexerRoundMetadata
 ): Promise<PromptEvaluationQuestions> => {
-  if (pool.questions.length > 0) {
-    return pool.questions.map(question => question.question);
+  const questions =
+    await evaluationQuestionService.getEvaluationQuestionsByAlloPoolId(
+      pool.alloPoolId,
+      pool.chainId
+    );
+
+  if (questions.length > 0) {
+    return questions.map(question => question.question);
   }
 
   const [evalError, evaluationQuestions] = await catchError(
