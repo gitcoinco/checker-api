@@ -1,4 +1,6 @@
 import { DataSource } from 'typeorm';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // Set default values for environment variables
 const synchronize = process.env.SYNCHRONIZE?.toLowerCase() === 'true';

@@ -44,7 +44,7 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
 
   // Log the receipt of the update request
   logger.info(
-    `Received update request for chainId: ${chainId}, alloPoolId: ${alloPoolId}`
+    `Received update request for chainId: ${chainId}, alloPoolId: ${alloPoolId}, skipEvaluation: ${skipEvaluation}`
   );
 
   // ---- Fetch pool data from the indexer ----
@@ -202,3 +202,4 @@ const triggerLLMEvaluationByPool = async (
 
   await createLLMEvaluations(evaluationParamsArray);
 };
+
