@@ -16,7 +16,7 @@ import {
   type RoundMetadata,
   type RoundWithApplications,
 } from '@/ext/indexer';
-import { EVALUATOR_TYPE } from '@/entity/Evaluation';
+import { type Evaluation, EVALUATOR_TYPE } from '@/entity/Evaluation';
 import { IsNullError, NotFoundError } from '@/errors';
 
 const logger = createLogger();
@@ -92,30 +92,25 @@ export const evaluateApplication = async (
   logger.info(`Evaluation created for alloApplicationId: ${alloApplicationId}`);
   res.status(200).json({
     message: 'Evaluation successfully created',
-    evaluationId: evaluationResponse.id,
+    evaluationId: evaluationResponse?.id,
   });
 };
 
 // Second function to handle creating the evaluation and error checking
 export const createEvaluation = async (
   params: CreateEvaluationParams
-): Promise<any> => {
+): Promise<Evaluation> => {
   // Create evaluation with answers
   const [evaluationError, evaluation] = await catchError(
     evaluationService.createEvaluationWithAnswers(params)
   );
 
-  if (evaluationError !== undefined) {
-    logger.error('Failed to create evaluation:', evaluationError);
-    return { error: evaluationError };
+  if (evaluationError !== undefined || evaluation == null) {
+    logger.error('Failed to create evaluation: Evaluation is null.undefined');
+    throw new IsNullError('Evaluation is null/undefined');
   }
 
-  if (evaluation == null) {
-    logger.error('Failed to create evaluation: Evaluation is null');
-    return { error: new IsNullError('Evaluation is null') };
-  }
-
-  return { evaluation };
+  return evaluation;
 };
 
 export interface CreateLLMEvaluationParams {
