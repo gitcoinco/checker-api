@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import evaluationService, {
   type CreateEvaluationParams,
 } from '@/service/EvaluationService';
-import { catchError, validateRequest } from '@/utils';
+import { addressFrom, catchError, validateRequest } from '@/utils';
 import { createLogger } from '@/logger';
 import applicationService from '@/service/ApplicationService';
 import poolService from '@/service/PoolService';
@@ -144,7 +144,6 @@ export const triggerLLMEvaluation = async (
     alloPoolId
   );
 
-  // ---- Fetch pool data from the indexer ----
   const [errorFetching, indexerApplicationData] = await catchError(
     indexerClient.getApplicationWithRound({
       chainId,
@@ -153,7 +152,6 @@ export const triggerLLMEvaluation = async (
     })
   );
 
-  // Handle errors or missing data from the indexer
   if (errorFetching != null || indexerApplicationData == null) {
     logger.warn(
       `No pool found for chainId: ${chainId}, alloPoolId: ${alloPoolId}`
@@ -167,7 +165,7 @@ export const triggerLLMEvaluation = async (
     alloPoolId,
     alloApplicationId,
     cid: indexerApplicationData.metadataCid,
-    evaluator: EVALUATOR_TYPE.LLM_GPT3,
+    evaluator: addressFrom(1),
     roundMetadata: indexerApplicationData.round.roundMetadata,
     applicationMetadata: indexerApplicationData.metadata,
     questions,
@@ -191,13 +189,14 @@ export const createLLMEvaluations = async (
   const roundCache: Record<string, RoundWithApplications> = {};
   const evaluationPromises = paramsArray.map(async params => {
     const evaluationQuestions =
-      params.questions ??
-      (await evaluationService.getQuestionsByChainAndAlloPoolId(
-        params.chainId,
-        params.alloPoolId
-      ));
+      params.questions === undefined || params.questions.length === 0
+        ? await evaluationService.getQuestionsByChainAndAlloPoolId(
+            params.chainId,
+            params.alloPoolId
+          )
+        : params.questions;
 
-    if (evaluationQuestions == null) {
+    if (evaluationQuestions === null || evaluationQuestions.length === 0) {
       logger.error('Failed to get evaluation questions');
       throw new Error('Failed to get evaluation questions');
     }
@@ -272,3 +271,4 @@ export const createLLMEvaluations = async (
   // Wait for all promises to resolve
   await Promise.all(evaluationPromises);
 };
+

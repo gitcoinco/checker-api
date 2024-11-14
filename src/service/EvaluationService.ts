@@ -65,7 +65,9 @@ class EvaluationService {
 
     // Normalize the score to be between 0 and 100
     const maxPossibleScore = questions.length * 2; // Each question can contribute a maximum of 2 points (uncertain)
-    const evaluatorScore = (1 - totalScore / maxPossibleScore) * 100;
+    const evaluatorScore = Math.round(
+      (1 - totalScore / maxPossibleScore) * 100
+    );
 
     // Create the Evaluation
     const evaluation = await this.createEvaluation({
