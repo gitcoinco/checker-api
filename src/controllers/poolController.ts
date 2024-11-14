@@ -18,22 +18,36 @@ import {
   createLLMEvaluations,
 } from './evaluationController';
 import { type Pool } from '@/entity/Pool';
+import { IsNullError, NotFoundError } from '@/errors';
+
 const logger = createLogger();
 
 interface PoolIdChainId {
   alloPoolId: string;
   chainId: number;
+  skipEvaluation?: boolean;
 }
 
+/**
+ * Synchronizes a pool by fetching data from the indexer, updating the pool, handling evaluation questions,
+ * updating applications, and triggering LLM evaluation if applicable.
+ *
+ * @param req - Express request object
+ * @param res - Express response object
+ */
 export const syncPool = async (req: Request, res: Response): Promise<void> => {
+  // Validate the incoming request
   validateRequest(req, res);
 
-  const { chainId, alloPoolId } = req.body as PoolIdChainId;
+  // Extract chainId and alloPoolId from the request body
+  const { chainId, alloPoolId, skipEvaluation } = req.body as PoolIdChainId;
 
+  // Log the receipt of the update request
   logger.info(
     `Received update request for chainId: ${chainId}, alloPoolId: ${alloPoolId}`
   );
 
+  // ---- Fetch pool data from the indexer ----
   const [errorFetching, indexerPoolData] = await catchError(
     indexerClient.getRoundWithApplications({
       chainId,
@@ -41,56 +55,59 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
     })
   );
 
+  // Handle errors or missing data from the indexer
   if (errorFetching != null || indexerPoolData == null) {
     logger.warn(
       `No pool found for chainId: ${chainId}, alloPoolId: ${alloPoolId}`
     );
     res.status(404).json({ message: 'Pool not found on indexer' });
-    return;
+    throw new NotFoundError(`Pool not found on indexer`);
   }
 
+  // ---- Get or create the pool ----
+  // Upsert the pool with the fetched data
   const [error, pool] = await catchError(
     poolService.upsertPool(chainId, alloPoolId)
   );
 
+  // Handle errors during the upsert operation
   if (error != null || pool == null) {
     logger.error(`Failed to upsert pool: ${error?.message}`);
     res
       .status(500)
       .json({ message: 'Error upserting pool', error: error?.message });
-    return;
+    throw new IsNullError(`Error upserting pool`);
   }
 
+  // ---- LLM evaluation questions ----
+  // Fetch evaluation questions from the pool or request new questions
   const [evalQuestionsError, evaluationQuestions] = await catchError(
     handlePoolEvaluationQuestions(pool, indexerPoolData.roundMetadata)
   );
 
+  // Handle errors during the evaluation question handling
   if (evalQuestionsError != null || evaluationQuestions == null) {
     res.status(500).json({
       message: 'Error handling evaluation questions',
       error: evalQuestionsError?.message,
     });
-    return;
+    throw new IsNullError(`Error handling evaluation questions`);
   }
 
-  const applicationData = indexerPoolData.applications.map(application => ({
-    alloApplicationId: application.id,
-    profileId: application.projectId,
-  }));
+  // ---- Update Applications ----
+  // Update the pool with the applications from the indexer
+  await updateApplications(chainId, alloPoolId, indexerPoolData);
 
-  await applicationService.upsertApplicationsForPool(
-    alloPoolId,
-    chainId,
-    applicationData
-  );
-
-  await triggerLLMEvaluationByPool(
-    alloPoolId,
-    chainId,
-    indexerPoolData,
-    evaluationQuestions
-  );
-
+  // ---- LLM evaluation ----
+  // Trigger LLM evaluation for the pool if there are applications without evaluations
+  if (skipEvaluation !== true)
+    await triggerLLMEvaluationByPool(
+      alloPoolId,
+      chainId,
+      indexerPoolData,
+      evaluationQuestions
+    );
+  // Log success and respond to the request
   logger.info('successfully synced pool', pool);
   res.status(200).json({ message: 'pool synced successfully' });
 };
@@ -123,6 +140,23 @@ const handlePoolEvaluationQuestions = async (
   );
 
   return evaluationQuestions;
+};
+
+const updateApplications = async (
+  chainId: number,
+  alloPoolId: string,
+  indexerPoolData: IndexerRoundWithApplications
+): Promise<void> => {
+  const applicationData = indexerPoolData.applications.map(application => ({
+    alloApplicationId: application.id,
+    profileId: application.projectId,
+  }));
+
+  await applicationService.upsertApplicationsForPool(
+    alloPoolId,
+    chainId,
+    applicationData
+  );
 };
 
 const triggerLLMEvaluationByPool = async (
