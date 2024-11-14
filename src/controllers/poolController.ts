@@ -76,7 +76,7 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
   );
 
   const applicationData = poolData.applications.map(application => ({
-    applicationId: application.id,
+    alloApplicationId: application.id,
     profileId: application.projectId,
   }));
 
@@ -91,7 +91,9 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
     const evaluationParamsArray: CreateLLMEvaluationParams[] =
       insertedApplications
         .map(application =>
-          poolData.applications.find(a => a.id === application.applicationId)
+          poolData.applications.find(
+            a => a.id === application.alloApplicationId
+          )
         )
         .filter(poolApplication => poolApplication !== undefined)
         .slice(0, 10) // todo: remove dev limit

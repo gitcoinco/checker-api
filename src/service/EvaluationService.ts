@@ -7,6 +7,7 @@ import {
 import { toAnswerType } from '@/entity/EvaluationAnswer';
 import evaluationAnswerService from './EvaluationAnswerService';
 import { type PromptEvaluationQuestions } from '@/ext/openai';
+import { NotFoundError } from '@/errors';
 
 interface EvaluationAnswerInput {
   questionIndex: number;
@@ -20,7 +21,7 @@ export interface EvaluationSummaryInput {
 
 export interface CreateEvaluationParams {
   alloPoolId: string;
-  applicationId: string;
+  alloApplicationId: string;
   cid: string;
   evaluator: string;
   summaryInput: EvaluationSummaryInput;
@@ -34,7 +35,7 @@ class EvaluationService {
 
   async createEvaluationWithAnswers({
     alloPoolId,
-    applicationId,
+    alloApplicationId,
     cid,
     evaluator,
     summaryInput,
@@ -43,11 +44,11 @@ class EvaluationService {
     const { questions, summary } = summaryInput;
 
     const application = await applicationRepository.findOne({
-      where: { pool: { alloPoolId }, applicationId },
+      where: { pool: { alloPoolId }, alloApplicationId },
     });
 
     if (application == null) {
-      throw new Error('Application not found');
+      throw new NotFoundError('Application not found');
     }
 
     // Calculate the evaluator score

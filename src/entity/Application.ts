@@ -11,7 +11,7 @@ import { Pool } from '@/entity/Pool';
 import { Evaluation } from '@/entity/Evaluation';
 
 @Entity()
-@Unique(['applicationId', 'poolId', 'chainId'])
+@Unique(['alloApplicationId', 'poolId', 'chainId'])
 export class Application {
   @PrimaryGeneratedColumn()
   id: number;
@@ -20,7 +20,7 @@ export class Application {
   chainId: number;
 
   @Column()
-  applicationId: string;
+  alloApplicationId: string;
 
   @ManyToOne(() => Pool, pool => pool.applications)
   pool: Pool;

@@ -32,7 +32,7 @@ export const evaluateApplication = async (
 
   const {
     alloPoolId,
-    applicationId,
+    alloApplicationId,
     cid,
     evaluator,
     summaryInput,
@@ -40,19 +40,21 @@ export const evaluateApplication = async (
   }: EvaluateApplicationBody = req.body;
 
   logger.info(
-    `Received evaluation request for applicationId: ${applicationId} in poolId: ${alloPoolId}`
+    `Received evaluation request for alloApplicationId: ${alloApplicationId} in poolId: ${alloPoolId}`
   );
 
   const [errorFetching, application] = await catchError(
     applicationService.getApplicationByChainIdPoolIdApplicationId(
       alloPoolId,
       chainId,
-      applicationId
+      alloApplicationId
     )
   );
 
   if (errorFetching !== undefined || application === null) {
-    logger.warn(`No application found for applicationId: ${applicationId}`);
+    logger.warn(
+      `No application found for alloApplicationId: ${alloApplicationId}`
+    );
     res.status(404).json({ message: 'Application not found' });
     return;
   }
@@ -70,7 +72,7 @@ export const evaluateApplication = async (
   const [evaluationError, evaluationResponse] = await catchError(
     createEvaluation({
       alloPoolId,
-      applicationId,
+      alloApplicationId,
       cid,
       evaluator,
       summaryInput,
@@ -89,7 +91,7 @@ export const evaluateApplication = async (
     return;
   }
 
-  logger.info(`Evaluation created for applicationId: ${applicationId}`);
+  logger.info(`Evaluation created for alloApplicationId: ${alloApplicationId}`);
   res.status(200).json({
     message: 'Evaluation successfully created',
     evaluationId: evaluationResponse.id,
@@ -181,14 +183,14 @@ export const createLLMEvaluations = async (
       }
 
       const application = round.applications.find(
-        app => app.id === params.applicationId
+        app => app.id === params.alloApplicationId
       );
       if (application == null) {
         logger.error(
-          `Application with ID: ${params.applicationId} not found in round`
+          `Application with ID: ${params.alloApplicationId} not found in round`
         );
         throw new Error(
-          `Application with ID: ${params.applicationId} not found in round`
+          `Application with ID: ${params.alloApplicationId} not found in round`
         );
       }
 
@@ -204,7 +206,7 @@ export const createLLMEvaluations = async (
 
     await createEvaluation({
       alloPoolId: params.alloPoolId,
-      applicationId: params.applicationId,
+      alloApplicationId: params.alloApplicationId,
       cid: params.cid,
       evaluator: params.evaluator,
       summaryInput: evaluation,

@@ -16,10 +16,10 @@ const router = Router();
  *           schema:
  *             type: object
  *             properties:
- *               poolId:
+ *               alloPoolId:
  *                 type: string
  *                 example: "609"
- *               applicationId:
+ *               alloApplicationId:
  *                 type: string
  *                 example: "app123"
  *               evaluator:
@@ -49,8 +49,8 @@ const router = Router();
  *                 type: integer
  *                 example: 42161
  *             example:
- *               poolId: "609"
- *               applicationId: "0"
+ *               alloPoolId: "609"
+ *               alloApplicationId: "0"
  *               evaluator: "0x12345abcdef67890"
  *               cid: "cid1234567890"
  *               summaryInput:
