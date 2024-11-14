@@ -17,12 +17,9 @@ import {
   type RoundWithApplications,
 } from '@/ext/indexer';
 import { EVALUATOR_TYPE } from '@/entity/Evaluation';
+import { IsNullError, NotFoundError } from '@/errors';
 
 const logger = createLogger();
-
-interface EvaluateApplicationBody extends CreateEvaluationParams {
-  chainId: number;
-}
 
 export const evaluateApplication = async (
   req: Request,
@@ -37,7 +34,7 @@ export const evaluateApplication = async (
     evaluator,
     summaryInput,
     chainId,
-  }: EvaluateApplicationBody = req.body;
+  }: CreateEvaluationParams = req.body;
 
   logger.info(
     `Received evaluation request for alloApplicationId: ${alloApplicationId} in poolId: ${alloPoolId}`
@@ -71,6 +68,7 @@ export const evaluateApplication = async (
 
   const [evaluationError, evaluationResponse] = await catchError(
     createEvaluation({
+      chainId,
       alloPoolId,
       alloApplicationId,
       cid,
@@ -114,7 +112,7 @@ export const createEvaluation = async (
 
   if (evaluation == null) {
     logger.error('Failed to create evaluation: Evaluation is null');
-    return { error: new Error('Evaluation is null') };
+    return { error: new IsNullError('Evaluation is null') };
   }
 
   return { evaluation };
@@ -183,14 +181,14 @@ export const createLLMEvaluations = async (
       }
 
       const application = round.applications.find(
-        app => app.id === params.alloApplicationId
+        app => app.id === params.applicationId
       );
       if (application == null) {
         logger.error(
-          `Application with ID: ${params.alloApplicationId} not found in round`
+          `Application with ID: ${params.applicationId} not found in round`
         );
-        throw new Error(
-          `Application with ID: ${params.alloApplicationId} not found in round`
+        throw new NotFoundError(
+          `Application with ID: ${params.applicationId} not found in round`
         );
       }
 
@@ -205,6 +203,7 @@ export const createLLMEvaluations = async (
     );
 
     await createEvaluation({
+      chainId: params.chainId,
       alloPoolId: params.alloPoolId,
       alloApplicationId: params.alloApplicationId,
       cid: params.cid,

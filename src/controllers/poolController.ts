@@ -87,33 +87,37 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
       applicationData
     );
 
-  if (pool !== undefined) {
-    const evaluationParamsArray: CreateLLMEvaluationParams[] =
-      insertedApplications
-        .map(application =>
-          poolData.applications.find(
-            a => a.id === application.alloApplicationId
-          )
-        )
-        .filter(poolApplication => poolApplication !== undefined)
-        .slice(0, 10) // todo: remove dev limit
-        .map(poolApplication => ({
-          chainId,
-          alloPoolId,
-          applicationId: poolApplication.id,
-          cid: poolApplication.metadataCid,
-          evaluator: addressFrom(1),
-          roundMetadata: poolData.roundMetadata,
-          applicationMetadata: poolApplication.metadata,
-          questions: evaluationQuestions,
-        }));
+  // Filter and limit applications to prepare for evaluation parameters
+  let applicationsForLLMReview = insertedApplications
+    .map(application =>
+      poolData.applications.find(
+        poolApp => poolApp.id === application.alloApplicationId
+      )
+    )
+    .filter(poolApplication => poolApplication !== undefined); // Removes any undefined results
 
-    if (evaluationParamsArray.length !== insertedApplications.length) {
-      logger.warn('Some applications were not found in poolData');
-    }
-
-    await createLLMEvaluations(evaluationParamsArray);
+  if (process.env.NODE_ENV === 'development') {
+    applicationsForLLMReview = applicationsForLLMReview.slice(0, 2); // Limit to first 2 applications in dev
   }
+
+  // Map filtered applications to evaluation parameters
+  const evaluationParamsArray: CreateLLMEvaluationParams[] =
+    applicationsForLLMReview.map(poolApplication => ({
+      chainId,
+      alloPoolId,
+      applicationId: poolApplication.id, // TODO: CHECK
+      cid: poolApplication.metadataCid,
+      evaluator: addressFrom(1),
+      roundMetadata: poolData.roundMetadata,
+      applicationMetadata: poolApplication.metadata,
+      questions: evaluationQuestions,
+    }));
+
+  if (evaluationParamsArray.length !== insertedApplications.length) {
+    logger.warn('Some applications were not found in poolData');
+  }
+
+  await createLLMEvaluations(evaluationParamsArray);
 
   logger.info('successfully synced pool', pool);
   res.status(200).json({ message: 'pool synced successfully' });

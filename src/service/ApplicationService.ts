@@ -32,6 +32,23 @@ class ApplicationService {
     return applications;
   }
 
+  async getApplicationByPoolIdAndApplicationId(
+    alloPoolId: string,
+    chainId: number,
+    alloApplicationId: string
+  ): Promise<Application | null> {
+    const application = await applicationRepository.findOne({
+      where: {
+        pool: { alloPoolId },
+        chainId,
+        alloApplicationId,
+      },
+      relations: { pool: true },
+    });
+
+    return application;
+  }
+
   async upsertApplicationsForPool(
     alloPoolId: string,
     chainId: number,

@@ -11,6 +11,7 @@ import {
   getRoundWithSingleApplication,
 } from './queries';
 import type { Logger } from 'winston';
+import { IsNullError } from '@/errors';
 
 class IndexerClient {
   private static instance: IndexerClient | null = null;
@@ -21,7 +22,7 @@ class IndexerClient {
     this.indexerEndpoint = process.env.INDEXER_URL ?? '';
 
     if (this.indexerEndpoint === '') {
-      throw new Error('INDEXER_URL is not set');
+      throw new IsNullError('INDEXER_URL is not set');
     }
 
     if (this.indexerEndpoint.endsWith('/')) {
