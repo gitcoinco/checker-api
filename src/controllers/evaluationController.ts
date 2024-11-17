@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import evaluationService, {
   type CreateEvaluationParams,
 } from '@/service/EvaluationService';
-import { catchError, validateRequest } from '@/utils';
+import { addressFrom, catchError, validateRequest } from '@/utils';
 import { createLogger } from '@/logger';
 import applicationService from '@/service/ApplicationService';
 import poolService from '@/service/PoolService';
@@ -16,13 +16,10 @@ import {
   type RoundMetadata,
   type RoundWithApplications,
 } from '@/ext/indexer';
-import { EVALUATOR_TYPE } from '@/entity/Evaluation';
+import { type Evaluation, EVALUATOR_TYPE } from '@/entity/Evaluation';
+import { IsNullError, NotFoundError } from '@/errors';
 
 const logger = createLogger();
-
-interface EvaluateApplicationBody extends CreateEvaluationParams {
-  chainId: number;
-}
 
 export const evaluateApplication = async (
   req: Request,
@@ -32,27 +29,29 @@ export const evaluateApplication = async (
 
   const {
     alloPoolId,
-    applicationId,
+    alloApplicationId,
     cid,
     evaluator,
     summaryInput,
     chainId,
-  }: EvaluateApplicationBody = req.body;
+  }: CreateEvaluationParams = req.body;
 
   logger.info(
-    `Received evaluation request for applicationId: ${applicationId} in poolId: ${alloPoolId}`
+    `Received evaluation request for alloApplicationId: ${alloApplicationId} in poolId: ${alloPoolId}`
   );
 
   const [errorFetching, application] = await catchError(
     applicationService.getApplicationByChainIdPoolIdApplicationId(
       alloPoolId,
       chainId,
-      applicationId
+      alloApplicationId
     )
   );
 
   if (errorFetching !== undefined || application === null) {
-    logger.warn(`No application found for applicationId: ${applicationId}`);
+    logger.warn(
+      `No application found for alloApplicationId: ${alloApplicationId}`
+    );
     res.status(404).json({ message: 'Application not found' });
     return;
   }
@@ -69,8 +68,9 @@ export const evaluateApplication = async (
 
   const [evaluationError, evaluationResponse] = await catchError(
     createEvaluation({
+      chainId,
       alloPoolId,
-      applicationId,
+      alloApplicationId,
       cid,
       evaluator,
       summaryInput,
@@ -89,39 +89,34 @@ export const evaluateApplication = async (
     return;
   }
 
-  logger.info(`Evaluation created for applicationId: ${applicationId}`);
+  logger.info(`Evaluation created for alloApplicationId: ${alloApplicationId}`);
   res.status(200).json({
     message: 'Evaluation successfully created',
-    evaluationId: evaluationResponse.id,
+    evaluationId: evaluationResponse?.id,
   });
 };
 
 // Second function to handle creating the evaluation and error checking
 export const createEvaluation = async (
   params: CreateEvaluationParams
-): Promise<any> => {
+): Promise<Evaluation> => {
   // Create evaluation with answers
   const [evaluationError, evaluation] = await catchError(
     evaluationService.createEvaluationWithAnswers(params)
   );
 
-  if (evaluationError !== undefined) {
-    logger.error('Failed to create evaluation:', evaluationError);
-    return { error: evaluationError };
+  if (evaluationError !== undefined || evaluation == null) {
+    logger.error('Failed to create evaluation: Evaluation is null.undefined');
+    throw new IsNullError('Evaluation is null/undefined');
   }
 
-  if (evaluation == null) {
-    logger.error('Failed to create evaluation: Evaluation is null');
-    return { error: new Error('Evaluation is null') };
-  }
-
-  return { evaluation };
+  return evaluation;
 };
 
 export interface CreateLLMEvaluationParams {
   chainId: number;
   alloPoolId: string;
-  applicationId: string;
+  alloApplicationId: string;
   cid: string;
   evaluator: string;
   roundMetadata?: RoundMetadata;
@@ -129,19 +124,79 @@ export interface CreateLLMEvaluationParams {
   questions?: PromptEvaluationQuestions;
 }
 
+interface PoolIdChainIdApplicationId {
+  alloPoolId: string;
+  chainId: number;
+  alloApplicationId: string;
+}
+
+export const triggerLLMEvaluation = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  validateRequest(req, res);
+
+  const { alloPoolId, chainId, alloApplicationId } =
+    req.body as PoolIdChainIdApplicationId;
+
+  const questions = await evaluationService.getQuestionsByChainAndAlloPoolId(
+    chainId,
+    alloPoolId
+  );
+
+  const [errorFetching, indexerApplicationData] = await catchError(
+    indexerClient.getApplicationWithRound({
+      chainId,
+      roundId: alloPoolId,
+      applicationId: alloApplicationId,
+    })
+  );
+
+  if (errorFetching != null || indexerApplicationData == null) {
+    logger.warn(
+      `No pool found for chainId: ${chainId}, alloPoolId: ${alloPoolId}`
+    );
+    res.status(404).json({ message: 'Pool not found on indexer' });
+    throw new NotFoundError(`Pool not found on indexer`);
+  }
+
+  const data: CreateLLMEvaluationParams = {
+    chainId,
+    alloPoolId,
+    alloApplicationId,
+    cid: indexerApplicationData.metadataCid,
+    evaluator: addressFrom(1),
+    roundMetadata: indexerApplicationData.round.roundMetadata,
+    applicationMetadata: indexerApplicationData.metadata,
+    questions,
+  };
+
+  try {
+    await createLLMEvaluations([data]);
+    res.status(200).json({ message: 'LLM evaluation triggered successfully' });
+  } catch (error) {
+    logger.error('Failed to create evaluations:', error);
+    res.status(500).json({
+      message: 'Failed to create evaluations',
+      error: error.message,
+    });
+  }
+};
+
 export const createLLMEvaluations = async (
   paramsArray: CreateLLMEvaluationParams[]
 ): Promise<void> => {
   const roundCache: Record<string, RoundWithApplications> = {};
   const evaluationPromises = paramsArray.map(async params => {
     const evaluationQuestions =
-      params.questions ??
-      (await evaluationService.getQuestionsByChainAndAlloPoolId(
-        params.chainId,
-        params.alloPoolId
-      ));
+      params.questions === undefined || params.questions.length === 0
+        ? await evaluationService.getQuestionsByChainAndAlloPoolId(
+            params.chainId,
+            params.alloPoolId
+          )
+        : params.questions;
 
-    if (evaluationQuestions == null) {
+    if (evaluationQuestions === null || evaluationQuestions.length === 0) {
       logger.error('Failed to get evaluation questions');
       throw new Error('Failed to get evaluation questions');
     }
@@ -181,14 +236,14 @@ export const createLLMEvaluations = async (
       }
 
       const application = round.applications.find(
-        app => app.id === params.applicationId
+        app => app.id === params.alloApplicationId
       );
       if (application == null) {
         logger.error(
-          `Application with ID: ${params.applicationId} not found in round`
+          `Application with ID: ${params.alloApplicationId} not found in round`
         );
-        throw new Error(
-          `Application with ID: ${params.applicationId} not found in round`
+        throw new NotFoundError(
+          `Application with ID: ${params.alloApplicationId} not found in round`
         );
       }
 
@@ -203,8 +258,9 @@ export const createLLMEvaluations = async (
     );
 
     await createEvaluation({
+      chainId: params.chainId,
       alloPoolId: params.alloPoolId,
-      applicationId: params.applicationId,
+      alloApplicationId: params.alloApplicationId,
       cid: params.cid,
       evaluator: params.evaluator,
       summaryInput: evaluation,
@@ -215,3 +271,4 @@ export const createLLMEvaluations = async (
   // Wait for all promises to resolve
   await Promise.all(evaluationPromises);
 };
+

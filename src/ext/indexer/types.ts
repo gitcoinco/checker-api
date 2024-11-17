@@ -82,14 +82,17 @@ export interface RoundApplicationsQueryResponse {
   rounds: RoundWithApplications[];
 }
 
-export interface RoundWithSingleApplication {
-  chainId: number;
+export interface ApplicationWithRound {
   id: string;
-  roundMetadata: RoundMetadata;
-  roundMetadataCid: string;
-  applications: Application[];
+  chainId: number;
+  metadata: ApplicationMetadata;
+  metadataCid: string;
+  round: {
+    id: string;
+    roundMetadata: RoundMetadata;
+  };
 }
 
-export interface RoundApplicationQueryResponse {
-  rounds: RoundWithSingleApplication[];
+export interface ApplicationRoundQueryResponse {
+  application: ApplicationWithRound;
 }

@@ -1,12 +1,14 @@
 import { type Evaluation, EVALUATOR_TYPE } from '@/entity/Evaluation';
 import {
-  applicationRepository,
   evaluationQuestionRepository,
   evaluationRepository,
 } from '@/repository';
 import { toAnswerType } from '@/entity/EvaluationAnswer';
 import evaluationAnswerService from './EvaluationAnswerService';
 import { type PromptEvaluationQuestions } from '@/ext/openai';
+import { NotFoundError } from '@/errors';
+import applicationService from './ApplicationService';
+import evaluationQuestionService from './EvaluationQuestionService';
 
 interface EvaluationAnswerInput {
   questionIndex: number;
@@ -19,8 +21,9 @@ export interface EvaluationSummaryInput {
 }
 
 export interface CreateEvaluationParams {
+  chainId: number;
   alloPoolId: string;
-  applicationId: string;
+  alloApplicationId: string;
   cid: string;
   evaluator: string;
   summaryInput: EvaluationSummaryInput;
@@ -33,8 +36,9 @@ class EvaluationService {
   }
 
   async createEvaluationWithAnswers({
+    chainId,
     alloPoolId,
-    applicationId,
+    alloApplicationId,
     cid,
     evaluator,
     summaryInput,
@@ -42,12 +46,15 @@ class EvaluationService {
   }: CreateEvaluationParams): Promise<Evaluation> {
     const { questions, summary } = summaryInput;
 
-    const application = await applicationRepository.findOne({
-      where: { pool: { alloPoolId }, applicationId },
-    });
+    const application =
+      await applicationService.getApplicationByAlloPoolIdAndAlloApplicationId(
+        alloPoolId,
+        chainId,
+        alloApplicationId
+      );
 
     if (application == null) {
-      throw new Error('Application not found');
+      throw new NotFoundError('Application not found');
     }
 
     // Calculate the evaluator score
@@ -58,7 +65,9 @@ class EvaluationService {
 
     // Normalize the score to be between 0 and 100
     const maxPossibleScore = questions.length * 2; // Each question can contribute a maximum of 2 points (uncertain)
-    const evaluatorScore = (1 - totalScore / maxPossibleScore) * 100;
+    const evaluatorScore = Math.round(
+      (1 - totalScore / maxPossibleScore) * 100
+    );
 
     // Create the Evaluation
     const evaluation = await this.createEvaluation({
@@ -72,9 +81,12 @@ class EvaluationService {
     });
 
     for (const question of questions) {
-      const evaluationQuestion = await evaluationQuestionRepository.findOne({
-        where: { pool: { alloPoolId }, questionIndex: question.questionIndex },
-      });
+      const evaluationQuestion =
+        await evaluationQuestionService.getEvaluationQuestionsByAlloPoolIdAndQuestionIndex(
+          alloPoolId,
+          chainId,
+          question.questionIndex
+        );
 
       if (evaluationQuestion == null) {
         throw new Error(

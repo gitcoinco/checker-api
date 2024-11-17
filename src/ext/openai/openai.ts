@@ -7,9 +7,10 @@ import {
 } from '@/ext/openai/prompt';
 import { createLogger } from '@/logger';
 import { type EvaluationSummaryInput } from '@/service/EvaluationService';
+import { env } from '@/env';
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: env.OPENAI_API_KEY,
 });
 
 const logger = createLogger();

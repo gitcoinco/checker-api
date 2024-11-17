@@ -16,6 +16,25 @@ class EvaluationQuestionService {
     await evaluationQuestionRepository.delete({ poolId });
   }
 
+  async getEvaluationQuestionsByAlloPoolId(
+    alloPoolId: string,
+    chainId: number
+  ): Promise<EvaluationQuestion[]> {
+    return await evaluationQuestionRepository.find({
+      where: { pool: { alloPoolId, chainId } },
+    });
+  }
+
+  async getEvaluationQuestionsByAlloPoolIdAndQuestionIndex(
+    alloPoolId: string,
+    chainId: number,
+    questionIndex: number
+  ): Promise<EvaluationQuestion | null> {
+    return await evaluationQuestionRepository.findOne({
+      where: { pool: { alloPoolId, chainId }, questionIndex },
+    });
+  }
+
   async resetEvaluationQuestions(
     chainId: number,
     alloPoolId: string,

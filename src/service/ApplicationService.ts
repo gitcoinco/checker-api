@@ -4,6 +4,7 @@ import profileService from './ProfileService';
 import poolService from './PoolService';
 import { In } from 'typeorm';
 import { NotFoundError } from '@/errors';
+import { EVALUATOR_TYPE } from '@/entity/Evaluation';
 
 class ApplicationService {
   async createApplication(
@@ -32,10 +33,46 @@ class ApplicationService {
     return applications;
   }
 
+  async getApplicationByAlloPoolIdAndAlloApplicationId(
+    alloPoolId: string,
+    chainId: number,
+    alloApplicationId: string
+  ): Promise<Application | null> {
+    const application = await applicationRepository.findOne({
+      where: {
+        pool: { alloPoolId },
+        chainId,
+        alloApplicationId,
+      },
+      relations: { pool: true },
+    });
+
+    return application;
+  }
+
+  async getApplicationsWithoutLLMEvalutionsByAlloPoolId(
+    alloPoolId: string,
+    chainId: number
+  ): Promise<Application[]> {
+    return await applicationRepository
+      .createQueryBuilder('application')
+      .leftJoinAndSelect('application.pool', 'pool')
+      .leftJoinAndSelect('application.evaluations', 'evaluation')
+      .where('pool.alloPoolId = :alloPoolId', { alloPoolId })
+      .andWhere('pool.chainId = :chainId', { chainId })
+      .andWhere(
+        'evaluation.id IS NULL OR evaluation.evaluatorType != :evaluatorType',
+        {
+          evaluatorType: EVALUATOR_TYPE.LLM_GPT3,
+        }
+      )
+      .getMany();
+  }
+
   async upsertApplicationsForPool(
     alloPoolId: string,
     chainId: number,
-    applicationData: Array<{ applicationId: string; profileId: string }>
+    applicationData: Array<{ alloApplicationId: string; profileId: string }>
   ): Promise<Application[]> {
     const existingApplications = await this.getApplicationsByPoolId(
       alloPoolId,
@@ -55,20 +92,20 @@ class ApplicationService {
     const newApplications = await Promise.all(
       applicationData
         .filter(
-          ({ applicationId }) =>
+          ({ alloApplicationId }) =>
             !existingApplications.some(
               existingApplication =>
-                existingApplication.applicationId === applicationId
+                existingApplication.alloApplicationId === alloApplicationId
             )
         )
-        .map(async ({ applicationId, profileId }) => {
+        .map(async ({ alloApplicationId, profileId }) => {
           // Ensure profile is upserted
           const profile = await profileService.upsertProfile(profileId);
 
           // Instantiate a new Application entity
           const application = new Application();
           application.chainId = chainId;
-          application.applicationId = applicationId;
+          application.alloApplicationId = alloApplicationId;
           application.pool = pool;
           application.profile = profile;
           application.evaluations = []; // Empty array for now
@@ -96,13 +133,13 @@ class ApplicationService {
   async getApplicationByChainIdPoolIdApplicationId(
     alloPoolId: string,
     chainId: number,
-    applicationId: string
+    alloApplicationId: string
   ): Promise<Application | null> {
     const application = await applicationRepository.findOne({
       where: {
         pool: { alloPoolId },
         chainId,
-        applicationId,
+        alloApplicationId,
       },
       relations: ['pool'],
     });
@@ -113,13 +150,13 @@ class ApplicationService {
   async getApplicationsByChainIdPoolIdApplicationIds(
     alloPoolId: string,
     chainId: number,
-    applicationIdArray: string[]
+    alloApplicationIds: string[]
   ): Promise<Application[]> {
     const applications = await applicationRepository.find({
       where: {
         pool: { alloPoolId },
         chainId,
-        applicationId: In(applicationIdArray),
+        alloApplicationId: In(alloApplicationIds),
       },
       relations: ['pool'],
     });

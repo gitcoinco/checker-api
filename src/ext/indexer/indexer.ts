@@ -2,15 +2,17 @@ import { createLogger } from '@/logger';
 import type {
   RoundApplicationsQueryResponse,
   RoundWithApplications,
-  RoundApplicationQueryResponse,
-  RoundWithSingleApplication,
+  ApplicationRoundQueryResponse,
+  ApplicationWithRound,
 } from './types';
 import request from 'graphql-request';
 import {
   getRoundWithApplications,
-  getRoundWithSingleApplication,
+  getApplicationWithRound,
 } from './queries';
 import type { Logger } from 'winston';
+import { IsNullError } from '@/errors';
+import { env } from '@/env';
 
 class IndexerClient {
   private static instance: IndexerClient | null = null;
@@ -18,10 +20,10 @@ class IndexerClient {
   private readonly logger: Logger;
 
   private constructor() {
-    this.indexerEndpoint = process.env.INDEXER_URL ?? '';
+    this.indexerEndpoint = env.INDEXER_URL ?? '';
 
     if (this.indexerEndpoint === '') {
-      throw new Error('INDEXER_URL is not set');
+      throw new IsNullError('INDEXER_URL is not set');
     }
 
     if (this.indexerEndpoint.endsWith('/')) {
@@ -87,7 +89,7 @@ class IndexerClient {
     }
   }
 
-  async getRoundWithSingleApplication({
+  async getApplicationWithRound({
     chainId,
     roundId,
     applicationId,
@@ -95,10 +97,7 @@ class IndexerClient {
     chainId: number;
     roundId: string;
     applicationId: string;
-  }): Promise<RoundWithSingleApplication | null> {
-    this.logger.debug(
-      `Requesting round with single application for roundId: ${roundId}, chainId: ${chainId}, applicationId: ${applicationId}`
-    );
+  }): Promise<ApplicationWithRound | null> {
 
     const requestVariables = {
       chainId,
@@ -107,28 +106,21 @@ class IndexerClient {
     };
 
     try {
-      const response: RoundApplicationQueryResponse = await request(
+      const response: ApplicationRoundQueryResponse = await request(
         this.indexerEndpoint,
-        getRoundWithSingleApplication,
+        getApplicationWithRound,
         requestVariables
       );
 
-      if (
-        response.rounds.length === 0 ||
-        response.rounds[0].applications.length === 0
-      ) {
+      const application = response.application;
+
+      if (application == null) {
         this.logger.warn(
           `No application found for applicationId: ${applicationId} in roundId: ${roundId} on chainId: ${chainId}`
         );
         return null;
       }
-
-      const round = response.rounds[0];
-
-      this.logger.info(
-        `Successfully fetched round with ID: ${round.id}, which includes the application with ID: ${applicationId}`
-      );
-      return round;
+      return response.application;
     } catch (error) {
       this.logger.error(
         `Failed to fetch round with single application: ${error.message}`,
