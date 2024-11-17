@@ -4,7 +4,6 @@ This project uses a custom logger based on the `winston` library to handle loggi
 
 [Winston Github](https://github.com/winstonjs/winston#readme)
 
-
 #### Example Usage in a Module
 
 To create a custom logger, use the `createLogger` function, providing a prefix that identifies the source of the log messages.
@@ -17,7 +16,7 @@ const logger = createLogger('exampleModule.ts');
 function exampleFunction() {
   logger.info('Function called successfully');
   try {
-    // ... 
+    // ...
   } catch (error) {
     logger.error(`An error occurred: ${error.message}`);
   }

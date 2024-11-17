@@ -6,10 +6,7 @@ import type {
   ApplicationWithRound,
 } from './types';
 import request from 'graphql-request';
-import {
-  getRoundWithApplications,
-  getApplicationWithRound,
-} from './queries';
+import { getRoundWithApplications, getApplicationWithRound } from './queries';
 import type { Logger } from 'winston';
 import { IsNullError } from '@/errors';
 import { env } from '@/env';
@@ -98,7 +95,6 @@ class IndexerClient {
     roundId: string;
     applicationId: string;
   }): Promise<ApplicationWithRound | null> {
-
     const requestVariables = {
       chainId,
       roundId,
