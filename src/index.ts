@@ -86,3 +86,5 @@ app.listen(port, () => {
     `API documentation available at http://localhost:${port}/api-docs`
   );
 });
+
+export default app;
