@@ -192,16 +192,21 @@ const triggerLLMEvaluationByPool = async (
 
   // Map filtered applications to evaluation parameters
   const evaluationParamsArray: CreateLLMEvaluationParams[] =
-    applicationsForLLMReview.map(poolApplication => ({
-      chainId,
-      alloPoolId,
-      alloApplicationId: poolApplication.id,
-      cid: poolApplication.metadataCid,
-      evaluator: addressFrom(1),
-      roundMetadata: indexerPoolData.roundMetadata,
-      applicationMetadata: poolApplication.metadata,
-      questions: evaluationQuestions,
-    }));
+    applicationsForLLMReview.map(poolApplication => {
+      if (poolApplication == null) {
+        throw new Error('Unexpected undefined poolApplication');
+      }
+      return {
+        chainId,
+        alloPoolId,
+        alloApplicationId: poolApplication.id,
+        cid: poolApplication.metadataCid,
+        evaluator: addressFrom(1),
+        roundMetadata: indexerPoolData.roundMetadata,
+        applicationMetadata: poolApplication.metadata,
+        questions: evaluationQuestions,
+      };
+    });
 
   if (evaluationParamsArray.length !== applicationsWithoutLLM.length) {
     logger.warn('Some applications were not found in indexerPoolData');
