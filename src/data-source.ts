@@ -7,11 +7,7 @@ const logging = env.LOGGING?.toLowerCase() === 'true';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  host: env.DB_HOST,
-  port: Number(env.DB_PORT),
-  username: env.DB_USERNAME,
-  password: env.DB_PASSWORD,
-  database: env.DB_DATABASE,
+  url: env.DATABASE_URL,
   synchronize,
   logging,
   entities: ['src/entity/*.ts'],
