@@ -103,4 +103,4 @@ export interface ManagerRolesResponse {
       address: string;
     }>;
   }>;
-};
+}
