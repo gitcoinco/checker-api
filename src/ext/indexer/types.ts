@@ -96,3 +96,11 @@ export interface ApplicationWithRound {
 export interface ApplicationRoundQueryResponse {
   application: ApplicationWithRound;
 }
+
+export interface ManagerRolesResponse {
+  rounds: Array<{
+    roles: Array<{
+      address: string;
+    }>;
+  }>;
+}

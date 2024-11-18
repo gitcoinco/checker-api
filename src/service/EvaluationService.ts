@@ -116,8 +116,7 @@ class EvaluationService {
   ): Promise<PromptEvaluationQuestions> => {
     const questions = await evaluationQuestionRepository.find({
       where: {
-        pool: { alloPoolId },
-        poolId: chainId,
+        pool: { alloPoolId, chainId },
       },
       relations: ['pool'],
       order: {

@@ -2,7 +2,12 @@ import type { Request, Response } from 'express';
 import evaluationService, {
   type CreateEvaluationParams,
 } from '@/service/EvaluationService';
-import { addressFrom, catchError, validateRequest } from '@/utils';
+import {
+  addressFrom,
+  catchError,
+  isPoolManager,
+  validateRequest,
+} from '@/utils';
 import { createLogger } from '@/logger';
 import applicationService from '@/service/ApplicationService';
 import poolService from '@/service/PoolService';
@@ -18,8 +23,13 @@ import {
 } from '@/ext/indexer';
 import { type Evaluation, EVALUATOR_TYPE } from '@/entity/Evaluation';
 import { IsNullError, NotFoundError } from '@/errors';
+import { type Hex } from 'viem';
 
 const logger = createLogger();
+
+interface EvaluationBody extends CreateEvaluationParams {
+  signature: Hex;
+}
 
 export const evaluateApplication = async (
   req: Request,
@@ -34,11 +44,36 @@ export const evaluateApplication = async (
     evaluator,
     summaryInput,
     chainId,
-  }: CreateEvaluationParams = req.body;
+    signature,
+  }: EvaluationBody = req.body;
 
   logger.info(
     `Received evaluation request for alloApplicationId: ${alloApplicationId} in poolId: ${alloPoolId}`
   );
+
+  const createEvaluationParams: CreateEvaluationParams = {
+    chainId,
+    alloPoolId,
+    alloApplicationId,
+    cid,
+    evaluator,
+    summaryInput,
+  };
+
+  const isAllowed = await isPoolManager<CreateEvaluationParams>(
+    createEvaluationParams,
+    signature,
+    chainId,
+    alloPoolId
+  );
+
+  if (!isAllowed) {
+    logger.warn(
+      `User with address: ${evaluator} is not allowed to evaluate application`
+    );
+    res.status(403).json({ message: 'Unauthorized' });
+    return;
+  }
 
   const [errorFetching, application] = await catchError(
     applicationService.getApplicationByChainIdPoolIdApplicationId(
@@ -67,14 +102,7 @@ export const evaluateApplication = async (
   }
 
   const [evaluationError, evaluationResponse] = await catchError(
-    createEvaluation({
-      chainId,
-      alloPoolId,
-      alloApplicationId,
-      cid,
-      evaluator,
-      summaryInput,
-    })
+    createEvaluation(createEvaluationParams)
   );
 
   if (evaluationError !== undefined || evaluationResponse === null) {
@@ -123,11 +151,14 @@ export interface CreateLLMEvaluationParams {
   applicationMetadata?: ApplicationMetadata;
   questions?: PromptEvaluationQuestions;
 }
-
 interface PoolIdChainIdApplicationId {
   alloPoolId: string;
   chainId: number;
   alloApplicationId: string;
+}
+
+interface PoolIdChainIdApplicationIdBody extends PoolIdChainIdApplicationId {
+  signature: Hex;
 }
 
 export const triggerLLMEvaluation = async (
@@ -136,8 +167,23 @@ export const triggerLLMEvaluation = async (
 ): Promise<void> => {
   validateRequest(req, res);
 
-  const { alloPoolId, chainId, alloApplicationId } =
-    req.body as PoolIdChainIdApplicationId;
+  const { alloPoolId, chainId, alloApplicationId, signature } =
+    req.body as PoolIdChainIdApplicationIdBody;
+
+  const isAllowed = await isPoolManager<PoolIdChainIdApplicationId>(
+    { alloPoolId, chainId, alloApplicationId },
+    signature,
+    chainId,
+    alloPoolId
+  );
+
+  if (!isAllowed) {
+    logger.warn(
+      `User with address: ${signature} is not allowed to evaluate application`
+    );
+    res.status(403).json({ message: 'Unauthorized' });
+    return;
+  }
 
   const questions = await evaluationService.getQuestionsByChainAndAlloPoolId(
     chainId,
@@ -197,7 +243,7 @@ export const createLLMEvaluations = async (
         : params.questions;
 
     if (evaluationQuestions === null || evaluationQuestions.length === 0) {
-      logger.error('Failed to get evaluation questions');
+      logger.error('createLLMEvaluations:Failed to get evaluation questions');
       throw new Error('Failed to get evaluation questions');
     }
 
