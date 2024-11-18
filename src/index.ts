@@ -12,6 +12,7 @@ import routes from '@/routes';
 import { createLogger } from '@/logger';
 import { postgraphileMiddleware } from '@/postgraphile.config';
 import { BaseError } from '@/errors';
+import { execSync } from 'child_process';
 
 // Configure process-level error handlers before app initialization
 process.on('unhandledRejection', (reason: any) => {
@@ -30,6 +31,7 @@ const logger = createLogger();
 
 app.get('/', (req, res) => {
   res.json({
+    deployedCommitHash: execSync('git rev-parse HEAD').toString().trim(),
     message: 'Welcome to Checker! 🧐',
     apis: '/api-docs',
     graphiql: '/graphiql',
