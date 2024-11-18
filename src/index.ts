@@ -28,6 +28,26 @@ process.on('uncaughtException', (error: Error) => {
 const app = express();
 const logger = createLogger();
 
+app.get('/', (req, res) => {
+  res.json({
+    message: "Welcome to Checker! 🧐",
+    apis: "/api-docs",
+    graphiql: "/graphiql",
+    status: "Ready to review those Gitcoin applications!",
+    data: {
+      current_task: "Evaluating Gitcoin applications 🚀",
+      next_step: "Dive into the latest submissions 📝",
+      reviewers: ["Application Guru", "Funding Finder", "Grant Guardian"]
+    },
+    tips: [
+      "Read between the lines of every application! 👀",
+      "Look for clear goals and impact in their proposals! 🎯",
+      "Make sure the team is passionate and capable! 💪"
+    ],
+    joke: "Why did the Gitcoin applicant bring a spreadsheet to the interview? Because they wanted to 'excel' at grant proposals! 📊"
+  });
+});
+
 // Swagger setup
 const specs = swaggerJsDoc(swaggerOptions);
 app.use(
