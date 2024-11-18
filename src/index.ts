@@ -31,7 +31,7 @@ const logger = createLogger();
 
 app.get('/', (req, res) => {
   res.json({
-    deployedCommitHash: execSync('git rev-parse HEAD').toString().trim(),
+    deployedCommitHash: `https://github.com/gitcoinco/checker-api/commit/${execSync('git rev-parse HEAD').toString().trim()}`,
     message: 'Welcome to Checker! 🧐',
     apis: '/api-docs',
     graphiql: '/graphiql',
