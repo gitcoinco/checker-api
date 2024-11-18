@@ -3,7 +3,7 @@ import { postgraphile } from 'postgraphile';
 import ConnectionFilterPlugin from 'postgraphile-plugin-connection-filter';
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 
-const DATABASE_URL = `postgres://${env.DB_USERNAME}:${env.DB_PASSWORD}@${env.DB_HOST}:${env.DB_PORT}/${env.DB_DATABASE}`;
+const DATABASE_URL = env.DATABASE_URL ?? '';
 
 export const postgraphileMiddleware = postgraphile(DATABASE_URL, 'public', {
   subscriptions: true,
