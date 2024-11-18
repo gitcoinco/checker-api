@@ -4,9 +4,14 @@ import type {
   RoundWithApplications,
   ApplicationRoundQueryResponse,
   ApplicationWithRound,
+  ManagerRolesResponse,
 } from './types';
 import request from 'graphql-request';
-import { getRoundWithApplications, getApplicationWithRound } from './queries';
+import {
+  getRoundWithApplications,
+  getApplicationWithRound,
+  getRoundManager,
+} from './queries';
 import type { Logger } from 'winston';
 import { IsNullError } from '@/errors';
 import { env } from '@/env';
@@ -39,6 +44,55 @@ class IndexerClient {
       IndexerClient.instance = new IndexerClient();
     }
     return IndexerClient.instance;
+  }
+
+  async getRoundManager({
+    chainId,
+    alloPoolId,
+  }: {
+    chainId: number;
+    alloPoolId: string;
+  }): Promise<string[]> {
+    this.logger.debug(
+      `Requesting round manager for poolId: ${alloPoolId}, chainId: ${chainId}`
+    );
+
+    const requestVariables = {
+      chainId,
+      alloPoolId,
+    };
+
+    try {
+      const response: ManagerRolesResponse = await request(
+        this.indexerEndpoint,
+        getRoundManager,
+        requestVariables
+      );
+
+      if (response.rounds.length === 0) {
+        this.logger.warn(
+          `No round found for poolId: ${alloPoolId} on chainId: ${chainId}`
+        );
+        return [];
+      }
+
+      const round = response.rounds[0];
+
+      if (round.roles.length === 0) {
+        this.logger.warn(
+          `No manager found for poolId: ${alloPoolId} on chainId: ${chainId}`
+        );
+        return [];
+      }
+
+      this.logger.info(`Successfully fetched round manager`);
+      return round.roles.map(role => role.address);
+    } catch (error) {
+      this.logger.error(`Failed to fetch round manager: ${error.message}`, {
+        error,
+      });
+      throw error;
+    }
   }
 
   async getRoundWithApplications({

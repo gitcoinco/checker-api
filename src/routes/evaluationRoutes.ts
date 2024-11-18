@@ -51,6 +51,9 @@ const router = Router();
  *               chainId:
  *                 type: integer
  *                 example: 42161
+ *               signature:
+ *                 type: string
+ *                 example: "0x1234567890abcdef"
  *             example:
  *               alloPoolId: "609"
  *               alloApplicationId: "0"
@@ -70,6 +73,7 @@ const router = Router();
  *                     answerEnum: 2
  *                 summary: "The application is well-rounded, but some aspects need improvement."
  *               chainId: 42161
+ *               signature: "0xdeadbeef"
  *     responses:
  *       200:
  *         description: "Evaluation successfully created"
@@ -113,10 +117,14 @@ router.post('/', evaluateApplication);
  *               alloApplicationId:
  *                 type: string
  *                 example: "1"
+ *               signature:
+ *                 type: string
+ *                 example: "0x1234567890abcdef"
  *             example:
  *               chainId: 42161
  *               alloPoolId: "609"
  *               alloApplicationId: "1"
+ *               signature: "0xdeadbeef"
  *     responses:
  *       200:
  *         description: "LLM evaluation triggered successfully"
@@ -130,7 +138,7 @@ router.post('/', evaluateApplication);
  *                   example: "LLM evaluation triggered successfully"
  *                 evaluationId:
  *                   type: string
- *                   example: "evalLLM123456"
+ *                   example: "1"
  *       404:
  *         description: "Application not found"
  *       500:

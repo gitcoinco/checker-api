@@ -1,5 +1,17 @@
 import { gql } from 'graphql-request';
 
+export const getRoundManager = gql`
+  query RoundManager($chainId: Int!, $alloPoolId: String!) {
+    rounds(
+      filter: { chainId: { equalTo: $chainId }, id: { equalTo: $alloPoolId } }
+    ) {
+      roles {
+        address
+      }
+    }
+  }
+`;
+
 export const getRoundWithApplications = gql`
   query RoundApplications($chainId: Int!, $roundId: String!) {
     rounds(
