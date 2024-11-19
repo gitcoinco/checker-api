@@ -46,7 +46,10 @@ export class EvaluationAnswer {
 
   @ManyToOne(
     () => EvaluationQuestion,
-    evaluationQuestion => evaluationQuestion.answers
+    evaluationQuestion => evaluationQuestion.answers,
+    {
+      onDelete: 'CASCADE',
+    }
   )
   evaluationQuestion: EvaluationQuestion;
 

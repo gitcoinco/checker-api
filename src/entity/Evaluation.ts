@@ -40,7 +40,9 @@ export class Evaluation {
   @Column()
   metadataCid: string;
 
-  @ManyToOne(() => Application, application => application.evaluations)
+  @ManyToOne(() => Application, application => application.evaluations, {
+    onDelete: 'CASCADE',
+  })
   application: Application;
 
   @OneToMany(

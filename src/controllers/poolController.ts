@@ -1,6 +1,11 @@
 import type { Request, Response } from 'express';
 import poolService from '@/service/PoolService';
-import { addressFrom, catchError, validateRequest } from '@/utils';
+import {
+  addressFrom,
+  catchError,
+  isPoolManager,
+  validateRequest,
+} from '@/utils';
 import { createLogger } from '@/logger';
 import {
   indexerClient,
@@ -20,6 +25,10 @@ import {
 import { type Pool } from '@/entity/Pool';
 import { IsNullError, NotFoundError } from '@/errors';
 import { env } from '@/env';
+import type {
+  PoolIdChainIdApplicationId,
+  PoolIdChainIdApplicationIdBody,
+} from './types';
 
 const logger = createLogger();
 
@@ -111,6 +120,46 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
   // Log success and respond to the request
   logger.info('successfully synced pool', pool);
   res.status(200).json({ message: 'pool synced successfully' });
+};
+
+export const recreateEvaluationQuestions = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  validateRequest(req, res);
+
+  const { alloPoolId, chainId, alloApplicationId, signature } =
+    req.body as PoolIdChainIdApplicationIdBody;
+
+  const isAllowed = await isPoolManager<PoolIdChainIdApplicationId>(
+    { alloPoolId, chainId, alloApplicationId },
+    signature,
+    chainId,
+    alloPoolId
+  );
+
+  if (!isAllowed) {
+    logger.warn(
+      `User with address: ${signature} is not allowed to evaluate application`
+    );
+    res.status(403).json({ message: 'Unauthorized' });
+    return;
+  }
+
+  // ---- LLM evaluation questions ----
+  // Fetch evaluation questions from the pool or request new questions
+  const [evalQuestionsError, evaluationQuestions] = await catchError(
+    handlePoolEvaluationQuestions(pool, indexerPoolData.roundMetadata)
+  );
+
+  // Handle errors during the evaluation question handling
+  if (evalQuestionsError != null || evaluationQuestions == null) {
+    res.status(500).json({
+      message: 'Error handling evaluation questions',
+      error: evalQuestionsError?.message,
+    });
+    throw new IsNullError(`Error handling evaluation questions`);
+  }
 };
 
 const handlePoolEvaluationQuestions = async (

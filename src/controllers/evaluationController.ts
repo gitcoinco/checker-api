@@ -24,6 +24,10 @@ import {
 import { type Evaluation, EVALUATOR_TYPE } from '@/entity/Evaluation';
 import { IsNullError, NotFoundError } from '@/errors';
 import { type Hex } from 'viem';
+import type {
+  PoolIdChainIdApplicationId,
+  PoolIdChainIdApplicationIdBody,
+} from './types';
 
 const logger = createLogger();
 
@@ -151,16 +155,6 @@ export interface CreateLLMEvaluationParams {
   applicationMetadata?: ApplicationMetadata;
   questions?: PromptEvaluationQuestions;
 }
-interface PoolIdChainIdApplicationId {
-  alloPoolId: string;
-  chainId: number;
-  alloApplicationId: string;
-}
-
-interface PoolIdChainIdApplicationIdBody extends PoolIdChainIdApplicationId {
-  signature: Hex;
-}
-
 export const triggerLLMEvaluation = async (
   req: Request,
   res: Response
