@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { type MigrationInterface, type QueryRunner } from "typeorm";
 
 export class InitMigration1731927111769 implements MigrationInterface {
     name = 'InitMigration1731927111769'
@@ -13,7 +13,7 @@ export class InitMigration1731927111769 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE "application" ("id" SERIAL NOT NULL, "chainId" integer NOT NULL, "alloApplicationId" character varying NOT NULL, "poolId" integer NOT NULL, "profileId" integer, CONSTRAINT "UQ_44dbcb26fba94fd04aaf46392fa" UNIQUE ("alloApplicationId", "poolId", "chainId"), CONSTRAINT "PK_569e0c3e863ebdf5f2408ee1670" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "profile" ("id" SERIAL NOT NULL, "profileId" character varying NOT NULL, CONSTRAINT "UQ_61a193410d652adedb69f7ad680" UNIQUE ("profileId"), CONSTRAINT "PK_3dd8bfc97e4a77c70971591bdcb" PRIMARY KEY ("id"))`);
         await queryRunner.query(`ALTER TABLE "evaluation" ADD CONSTRAINT "FK_f459958482585b957ef22cca734" FOREIGN KEY ("applicationId") REFERENCES "application"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "evaluation_answer" ADD CONSTRAINT "FK_ffe01531544524587279e70fe15" FOREIGN KEY ("evaluationId") REFERENCES "evaluation"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "evaluation_answer" ADD CONSTRAINT "FK_ffe01531544524587279e70fe15" FOREIGN KEY ("evaluationId") REFERENCES "evaluation"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "evaluation_answer" ADD CONSTRAINT "FK_758462d7b628e9d86fe25861566" FOREIGN KEY ("evaluationQuestionId") REFERENCES "evaluation_question"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "evaluation_question" ADD CONSTRAINT "FK_afa6632818bad5e99f65a6261ed" FOREIGN KEY ("poolId") REFERENCES "pool"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "application" ADD CONSTRAINT "FK_a2d1c7a2c6ee681b42112d41284" FOREIGN KEY ("poolId") REFERENCES "pool"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);

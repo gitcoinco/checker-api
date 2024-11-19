@@ -33,12 +33,10 @@ export interface CreateEvaluationParams {
 class EvaluationService {
   async createEvaluation(evaluation: Partial<Evaluation>): Promise<Evaluation> {
     if (evaluation.evaluator != null && evaluation.applicationId != null) {
-      console.log('=====> DELETING START');
       await this.deleteExistingEvaluationByEvaluatorAndApplicationId(
         evaluation.evaluator,
         evaluation.applicationId
       );
-      console.log('=====> DELETING DONE');
     }
     return await evaluationRepository.save(evaluation);
   }
@@ -87,8 +85,6 @@ class EvaluationService {
       (1 - totalScore / maxPossibleScore) * 100
     );
 
-    console.log('=====> SHIT 1');
-
     // Create the Evaluation
     const evaluation = await this.createEvaluation({
       evaluator,
@@ -99,8 +95,6 @@ class EvaluationService {
       applicationId: application.id,
       application,
     });
-
-    console.log('=====> SHIT 2');
 
     for (const question of questions) {
       const evaluationQuestion =
