@@ -39,7 +39,9 @@ export class EvaluationAnswer {
   })
   answer: AnswerType;
 
-  @ManyToOne(() => Evaluation, evaluation => evaluation.evaluationAnswer)
+  @ManyToOne(() => Evaluation, evaluation => evaluation.evaluationAnswer, {
+    onDelete: 'CASCADE',
+  })
   evaluation: Evaluation;
 
   @ManyToOne(
