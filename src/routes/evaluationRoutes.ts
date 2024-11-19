@@ -152,7 +152,7 @@ router.post('/llm', triggerLLMEvaluation);
  * /evaluate/recreate-questions:
  *   post:
  *     summary: "Recreate Evaluation Questions"
- *     description: "This endpoint recreates evaluation questions for a specified pool and chain."
+ *     description: "This endpoint recreates evaluation questions for a specified pool and chain. **Warning: This will also delete all past evaluations and their associated answers for the specified pool.**"
  *     requestBody:
  *       required: true
  *       content:
