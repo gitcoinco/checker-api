@@ -14,6 +14,7 @@ import poolService from '@/service/PoolService';
 import {
   type PromptEvaluationQuestions,
   requestEvaluation,
+  requestEvaluationQuestions,
 } from '@/ext/openai';
 import {
   type ApplicationMetadata,
@@ -25,15 +26,79 @@ import { type Evaluation, EVALUATOR_TYPE } from '@/entity/Evaluation';
 import { IsNullError, NotFoundError } from '@/errors';
 import { type Hex } from 'viem';
 import type {
+  PoolIdChainId,
   PoolIdChainIdApplicationId,
   PoolIdChainIdApplicationIdBody,
+  PoolIdChainIdBody,
 } from './types';
+import evaluationQuestionService from '@/service/EvaluationQuestionService';
 
 const logger = createLogger();
 
 interface EvaluationBody extends CreateEvaluationParams {
   signature: Hex;
 }
+
+export const recreateEvaluationQuestions = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { chainId, alloPoolId, signature } = req.body as PoolIdChainIdBody;
+
+  const isAllowed = await isPoolManager<PoolIdChainId>(
+    { alloPoolId, chainId },
+    signature,
+    chainId,
+    alloPoolId
+  );
+
+  if (!isAllowed) {
+    logger.warn(
+      `User with address: ${signature} is not allowed to evaluate application`
+    );
+    res.status(403).json({ message: 'Unauthorized' });
+    return;
+  }
+
+  const [error, roundWithApplications] = await catchError(
+    indexerClient.getRoundWithApplications({
+      chainId,
+      roundId: alloPoolId,
+    })
+  );
+
+  if (
+    error !== undefined ||
+    roundWithApplications === undefined ||
+    roundWithApplications?.roundMetadata === undefined
+  ) {
+    logger.error('Failed to fetch round with applications');
+    res
+      .status(404)
+      .json({ message: 'Failed to fetch round with applications' });
+    return;
+  }
+
+  const evaluationQuestions = await requestEvaluationQuestions(
+    roundWithApplications.roundMetadata
+  );
+
+  if (evaluationQuestions === null || evaluationQuestions.length === 0) {
+    logger.error('Failed to get evaluation questions');
+    res.status(404).json({ message: 'Failed to get evaluation questions' });
+    return;
+  }
+
+  await evaluationQuestionService.resetEvaluationQuestions(
+    chainId,
+    alloPoolId,
+    evaluationQuestions
+  );
+
+  await evaluationService.cleanEvaluations();
+
+  res.status(200).json(evaluationQuestions);
+};
 
 export const evaluateApplication = async (
   req: Request,
