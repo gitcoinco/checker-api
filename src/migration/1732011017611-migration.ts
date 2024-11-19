@@ -1,12 +1,10 @@
-import { type MigrationInterface, type QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class InitMigration1731927111769 implements MigrationInterface {
-    name = 'InitMigration1731927111769'
+export class Migration1732011017611 implements MigrationInterface {
+    name = 'Migration1732011017611'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`CREATE TYPE "public"."evaluation_evaluatortype_enum" AS ENUM('human', 'llm_gpt3')`);
         await queryRunner.query(`CREATE TABLE "evaluation" ("id" SERIAL NOT NULL, "evaluator" character varying(42) NOT NULL, "evaluatorType" "public"."evaluation_evaluatortype_enum" NOT NULL, "summary" character varying NOT NULL, "evaluatorScore" integer NOT NULL, "metadataCid" character varying NOT NULL, "applicationId" integer NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "lastUpdatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_566857ce7db15aa0fb1930b4cdf" UNIQUE ("evaluator", "applicationId"), CONSTRAINT "PK_b72edd439b9db736f55b584fa54" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TYPE "public"."evaluation_answer_answer_enum" AS ENUM('yes', 'no', 'uncertain')`);
         await queryRunner.query(`CREATE TABLE "evaluation_answer" ("id" SERIAL NOT NULL, "answer" "public"."evaluation_answer_answer_enum" NOT NULL, "evaluationId" integer NOT NULL, "evaluationQuestionId" integer NOT NULL, CONSTRAINT "UQ_5d5571491f885c88023b5f56366" UNIQUE ("evaluationId", "evaluationQuestionId"), CONSTRAINT "PK_26adcf2e8e65214d2558b8f6910" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "evaluation_question" ("id" SERIAL NOT NULL, "questionIndex" integer NOT NULL, "question" character varying NOT NULL, "poolId" integer NOT NULL, CONSTRAINT "UQ_bd9653bd57844a98c0863a0a5b8" UNIQUE ("poolId", "questionIndex"), CONSTRAINT "PK_6ecc0e6614b9c4bc65c6de2c021" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "pool" ("id" SERIAL NOT NULL, "chainId" integer NOT NULL, "alloPoolId" character varying NOT NULL, CONSTRAINT "UQ_72fcaa655b2b7348f4feaf25ea3" UNIQUE ("chainId", "alloPoolId"), CONSTRAINT "PK_db1bfe411e1516c01120b85f8fe" PRIMARY KEY ("id"))`);
@@ -32,9 +30,7 @@ export class InitMigration1731927111769 implements MigrationInterface {
         await queryRunner.query(`DROP TABLE "pool"`);
         await queryRunner.query(`DROP TABLE "evaluation_question"`);
         await queryRunner.query(`DROP TABLE "evaluation_answer"`);
-        await queryRunner.query(`DROP TYPE "public"."evaluation_answer_answer_enum"`);
         await queryRunner.query(`DROP TABLE "evaluation"`);
-        await queryRunner.query(`DROP TYPE "public"."evaluation_evaluatortype_enum"`);
     }
 
 }

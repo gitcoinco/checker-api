@@ -45,8 +45,7 @@ export class Evaluation {
 
   @OneToMany(
     () => EvaluationAnswer,
-    evaluationAnswer => evaluationAnswer.evaluation,
-    { cascade: true }
+    evaluationAnswer => evaluationAnswer.evaluation
   )
   evaluationAnswer: EvaluationAnswer[];
 
