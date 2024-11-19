@@ -24,7 +24,9 @@ export class EvaluationQuestion {
   @OneToMany(() => EvaluationAnswer, answer => answer.evaluationQuestion)
   answers: EvaluationAnswer[];
 
-  @ManyToOne(() => Pool, pool => pool.questions)
+  @ManyToOne(() => Pool, pool => pool.questions, {
+    onDelete: 'CASCADE',
+  })
   pool: Pool;
 
   @Column() // Explicitly define the foreign key column for pool

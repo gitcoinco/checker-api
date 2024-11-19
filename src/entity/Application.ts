@@ -22,7 +22,9 @@ export class Application {
   @Column()
   alloApplicationId: string;
 
-  @ManyToOne(() => Pool, pool => pool.applications)
+  @ManyToOne(() => Pool, pool => pool.applications, {
+    onDelete: 'CASCADE',
+  })
   pool: Pool;
 
   @ManyToOne(() => Profile, profile => profile.applications)

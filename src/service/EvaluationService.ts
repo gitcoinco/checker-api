@@ -31,8 +31,36 @@ export interface CreateEvaluationParams {
 }
 
 class EvaluationService {
+  async cleanEvaluations(): Promise<void> {
+    const evaluationsWithoutAnswers = await evaluationRepository
+      .createQueryBuilder('evaluation')
+      .leftJoinAndSelect('evaluation.evaluationAnswer', 'evaluationAnswer')
+      .where('evaluationAnswer.id IS NULL')
+      .getMany();
+
+    if (evaluationsWithoutAnswers.length > 0) {
+      await evaluationRepository.remove(evaluationsWithoutAnswers);
+    }
+  }
+
   async createEvaluation(evaluation: Partial<Evaluation>): Promise<Evaluation> {
+    if (evaluation.evaluator != null && evaluation.applicationId != null) {
+      await this.deleteExistingEvaluationByEvaluatorAndApplicationId(
+        evaluation.evaluator,
+        evaluation.applicationId
+      );
+    }
     return await evaluationRepository.save(evaluation);
+  }
+
+  async deleteExistingEvaluationByEvaluatorAndApplicationId(
+    evaluator: string,
+    applicationId: number
+  ): Promise<void> {
+    await evaluationRepository.delete({
+      evaluator,
+      applicationId,
+    });
   }
 
   async createEvaluationWithAnswers({

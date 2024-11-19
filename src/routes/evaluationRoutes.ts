@@ -1,5 +1,6 @@
 import {
   evaluateApplication,
+  recreateEvaluationQuestions,
   triggerLLMEvaluation,
 } from '@/controllers/evaluationController';
 import { Router } from 'express';
@@ -145,5 +146,51 @@ router.post('/', evaluateApplication);
  *         description: "Internal Server Error"
  */
 router.post('/llm', triggerLLMEvaluation);
+
+/**
+ * @swagger
+ * /evaluate/recreate-questions:
+ *   post:
+ *     summary: "Recreate Evaluation Questions"
+ *     description: "This endpoint recreates evaluation questions for a specified pool and chain. **Warning: This will also delete all past evaluations and their associated answers for the specified pool.**"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               chainId:
+ *                 type: integer
+ *                 example: 42161
+ *               alloPoolId:
+ *                 type: string
+ *                 example: "609"
+ *               signature:
+ *                 type: string
+ *                 example: "0x1234567890abcdef"
+ *             example:
+ *               chainId: 42161
+ *               alloPoolId: "609"
+ *               signature: "0xdeadbeef"
+ *     responses:
+ *       200:
+ *         description: "Evaluation questions recreated successfully"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 questions:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     example: "How would you rate the innovation of the application?"
+ *       404:
+ *         description: "Failed to fetch round with applications or get evaluation questions"
+ *       500:
+ *         description: "Internal Server Error"
+ */
+router.post('/recreate-questions', recreateEvaluationQuestions);
 
 export default router;
