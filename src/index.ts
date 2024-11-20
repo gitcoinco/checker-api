@@ -4,6 +4,7 @@ import express, {
   type Response,
   type NextFunction,
 } from 'express';
+import cors from 'cors';
 import swaggerJsDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import swaggerOptions from '@/swagger';
@@ -28,6 +29,8 @@ process.on('uncaughtException', (error: Error) => {
 // Initialize Express app
 const app = express();
 const logger = createLogger();
+
+app.use(cors());
 
 app.get('/', (req, res) => {
   res.json({
