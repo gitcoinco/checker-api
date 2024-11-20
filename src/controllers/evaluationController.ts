@@ -111,6 +111,7 @@ export const evaluateApplication = async (
     alloApplicationId,
     cid,
     evaluator,
+    evaluationStatus,
     summaryInput,
     chainId,
     signature,
@@ -126,6 +127,7 @@ export const evaluateApplication = async (
     alloApplicationId,
     cid,
     evaluator,
+    evaluationStatus,
     summaryInput,
   };
 

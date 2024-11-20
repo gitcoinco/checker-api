@@ -1,4 +1,8 @@
-import { type Evaluation, EVALUATOR_TYPE } from '@/entity/Evaluation';
+import {
+  type Evaluation,
+  EVALUATION_STATUS,
+  EVALUATOR_TYPE,
+} from '@/entity/Evaluation';
 import {
   evaluationQuestionRepository,
   evaluationRepository,
@@ -27,6 +31,7 @@ export interface CreateEvaluationParams {
   cid: string;
   evaluator: string;
   summaryInput: EvaluationSummaryInput;
+  evaluationStatus?: EVALUATION_STATUS;
   evaluatorType?: EVALUATOR_TYPE;
 }
 
@@ -70,6 +75,7 @@ class EvaluationService {
     cid,
     evaluator,
     summaryInput,
+    evaluationStatus = EVALUATION_STATUS.REJECTED,
     evaluatorType = EVALUATOR_TYPE.HUMAN,
   }: CreateEvaluationParams): Promise<Evaluation> {
     const { questions, summary } = summaryInput;
@@ -97,12 +103,21 @@ class EvaluationService {
       (1 - totalScore / maxPossibleScore) * 100
     );
 
+    // Set the evaluation status if the evaluator is not human
+    if (evaluatorType !== EVALUATOR_TYPE.HUMAN) {
+      evaluationStatus =
+        evaluatorScore >= 60
+          ? EVALUATION_STATUS.APPROVED
+          : EVALUATION_STATUS.REJECTED;
+    }
+
     // Create the Evaluation
     const evaluation = await this.createEvaluation({
       evaluator,
       evaluatorType,
       summary,
       evaluatorScore,
+      evaluationStatus,
       metadataCid: cid,
       applicationId: application.id,
       application,

@@ -16,6 +16,11 @@ export enum EVALUATOR_TYPE {
   LLM_GPT3 = 'llm_gpt3', // evaluator: address(1)
 }
 
+export enum EVALUATION_STATUS {
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+}
+
 @Entity()
 @Unique(['evaluator', 'applicationId'])
 export class Evaluation {
@@ -36,6 +41,12 @@ export class Evaluation {
 
   @Column()
   evaluatorScore: number;
+
+  @Column({
+    type: 'enum',
+    enum: EVALUATION_STATUS,
+  })
+  evaluationStatus: EVALUATION_STATUS;
 
   @Column()
   metadataCid: string;
