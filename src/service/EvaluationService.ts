@@ -105,10 +105,13 @@ class EvaluationService {
 
     // Set the evaluation status if the evaluator is not human
     if (evaluatorType !== EVALUATOR_TYPE.HUMAN) {
-      evaluationStatus =
-        evaluatorScore >= 60
-          ? EVALUATION_STATUS.APPROVED
-          : EVALUATION_STATUS.REJECTED;
+      if (evaluatorScore < 40) {
+        evaluationStatus = EVALUATION_STATUS.REJECTED;
+      } else if (evaluatorScore > 60) {
+        evaluationStatus = EVALUATION_STATUS.APPROVED;
+      } else {
+        evaluationStatus = EVALUATION_STATUS.UNCERTAIN;
+      }
     }
 
     // Create the Evaluation

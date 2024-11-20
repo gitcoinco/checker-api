@@ -19,6 +19,7 @@ export enum EVALUATOR_TYPE {
 export enum EVALUATION_STATUS {
   APPROVED = 'approved',
   REJECTED = 'rejected',
+  UNCERTAIN = 'uncertain',
 }
 
 @Entity()
