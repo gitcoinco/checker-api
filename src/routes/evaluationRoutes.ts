@@ -59,7 +59,7 @@ const router = Router();
  *               alloPoolId: "609"
  *               alloApplicationId: "0"
  *               evaluator: "0x12345abcdef67890"
- *               evaluationStatus: "APPROVED"
+ *               evaluationStatus: "approved"
  *               cid: "cid1234567890"
  *               summaryInput:
  *                 questions:
