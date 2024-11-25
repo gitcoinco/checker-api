@@ -1,4 +1,4 @@
-import { type ApplicationMetadata, type RoundMetadata } from '../indexer/types';
+import { type RoundMetadata } from '../indexer/types';
 
 export type PromptEvaluationQuestions = string[];
 
@@ -8,6 +8,4 @@ export const essentialRoundFields: Array<keyof RoundMetadata> = [
   'eligibility',
 ];
 
-export const essentialApplicationFields: Array<keyof ApplicationMetadata> = [
-  'application',
-];
+export const essentialApplicationFields = ['project', 'answers', 'description'];
