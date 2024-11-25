@@ -17,11 +17,11 @@ const logger = createLogger();
 
 const queryOpenAI = async (prompt: string): Promise<string> => {
   try {
-    const response = await openai.completions.create({
-      model: 'gpt-3.5-turbo-instruct',
-      prompt,
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
       max_tokens: 250,
-      temperature: 0.7,
+      temperature: 0.2,
     });
 
     logger.debug(
@@ -29,7 +29,11 @@ const queryOpenAI = async (prompt: string): Promise<string> => {
       JSON.stringify(response, null, 2)
     );
 
-    const result = response.choices[0].text.trim();
+    const result = response.choices?.[0]?.message?.content?.trim() ?? '';
+
+    if (result === '') {
+      throw new Error('Empty response from OpenAI');
+    }
 
     return result;
   } catch (error) {
@@ -50,7 +54,7 @@ export const requestEvaluation = async (
   );
   const result = await queryOpenAI(prompt);
   logger.info('Application evaluation complete', { result });
-  return JSON.parse(result);
+  return JSON.parse(removeJsonCodeBlocks(result));
 };
 
 export const requestEvaluationQuestions = async (
@@ -60,8 +64,11 @@ export const requestEvaluationQuestions = async (
   const prompt: string = createEvaluationQuestionPrompt(roundMetadata);
   const result = await queryOpenAI(prompt);
   logger.info('Received evaluation questions from OpenAI', { result });
-  return result
-    .split('\n')
-    .map(line => line.replace(/^\d+\.\s*/, '').trim())
-    .filter(line => line.length > 0);
+  return JSON.parse(removeJsonCodeBlocks(result)).map(line =>
+    line.replace(/^\d+\.\s*/, '').trim()
+  );
+};
+
+const removeJsonCodeBlocks = (str: string): string => {
+  return str.replace(/```json/g, '').replace(/```/g, '');
 };
