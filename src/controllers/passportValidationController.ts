@@ -4,7 +4,6 @@ import type { ProjectApplicationForManager } from '@/ext/passport/types';
 import { isVerified } from '@/ext/passport/credentialverification';
 
 interface SocialCredentialBody {
-  provider: 'twitter' | 'github';
   application: Partial<ProjectApplicationForManager>;
 }
 
@@ -14,10 +13,15 @@ export const validateSocialCredential = async (
 ): Promise<void> => {
   validateRequest(req, res);
 
-  const { provider, application } = req.body as SocialCredentialBody;
+  const { application } = req.body as SocialCredentialBody;
 
-  res.json({
-    message: 'Social credential validated',
-    verified: await isVerified(provider, application),
-  });
+  try {
+    const result = await isVerified(application);
+    res.json({
+      message: 'Social credential validated',
+      provider: result,
+    });
+  } catch (error) {
+    res.status(400).json({ message: 'Error validating social credential' });
+  }
 };

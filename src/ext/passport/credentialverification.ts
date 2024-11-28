@@ -11,35 +11,63 @@ export const IAM_SERVER =
 const verifier = new PassportVerifier();
 
 export async function isVerified(
-  provider: 'twitter' | 'github',
   application: Partial<ProjectApplicationForManager> | undefined
-): Promise<boolean> {
+): Promise<{
+  twitter: { isVerified: boolean };
+  github: { isVerified: boolean };
+}> {
   const applicationMetadata = application?.metadata;
-  const verifiableCredential =
-    applicationMetadata?.application.project.credentials[provider];
-  if (verifiableCredential === undefined) {
-    return false;
-  }
 
-  const vcHasValidProof = await verifier.verifyCredential(verifiableCredential);
-  const vcIssuedByValidIAMServer = verifiableCredential.issuer === IAM_SERVER;
-  const providerMatchesProject = vcProviderMatchesProject(
-    provider,
-    verifiableCredential,
-    applicationMetadata
-  );
-  const roleAddresses = application?.canonicalProject?.roles.map(
-    role => role.address
-  );
-  const vcIssuedToAtLeastOneProjectOwner = (roleAddresses ?? []).some(role =>
-    vcIssuedToAddress(verifiableCredential, role.toLowerCase())
-  );
-  return (
-    vcHasValidProof &&
-    vcIssuedByValidIAMServer &&
-    providerMatchesProject &&
-    vcIssuedToAtLeastOneProjectOwner
-  );
+  const verifyCredential = async (
+    provider: 'twitter' | 'github'
+  ): Promise<boolean> => {
+    const verifiableCredential =
+      applicationMetadata?.application.project.credentials[provider];
+    if (verifiableCredential === undefined) {
+      return false;
+    }
+
+    console.log('verifiableCredential', verifiableCredential);
+    console.log('issuer', verifiableCredential.issuer);
+
+    const vcHasValidProof =
+      await verifier.verifyCredential(verifiableCredential);
+    const vcIssuedByValidIAMServer = verifiableCredential.issuer === IAM_SERVER;
+    const providerMatchesProject = vcProviderMatchesProject(
+      provider,
+      verifiableCredential,
+      applicationMetadata
+    );
+
+    const roleAddresses = application?.canonicalProject?.roles.map(
+      role => role.address
+    );
+    const vcIssuedToAtLeastOneProjectOwner = (roleAddresses ?? []).some(role =>
+      vcIssuedToAddress(verifiableCredential, role.toLowerCase())
+    );
+
+    // todo: why is vcHasValidProof always false?
+    console.log(
+      `isVerified: ${vcHasValidProof} : ${vcIssuedByValidIAMServer} : ${providerMatchesProject} : ${vcIssuedToAtLeastOneProjectOwner}`
+    );
+
+    return (
+      vcHasValidProof &&
+      vcIssuedByValidIAMServer &&
+      providerMatchesProject &&
+      vcIssuedToAtLeastOneProjectOwner
+    );
+  };
+
+  const [twitterVerified, githubVerified] = await Promise.all([
+    verifyCredential('twitter'),
+    verifyCredential('github'),
+  ]);
+
+  return {
+    twitter: { isVerified: twitterVerified },
+    github: { isVerified: githubVerified },
+  };
 }
 
 function vcIssuedToAddress(vc: VerifiableCredential, address: string): boolean {
