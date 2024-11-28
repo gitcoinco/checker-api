@@ -27,9 +27,6 @@ export async function isVerified(
       return false;
     }
 
-    // console.log('verifiableCredential', verifiableCredential);
-    // console.log('issuer', verifiableCredential.issuer);
-
     const verifiedCredential =
       await verifier.verifyCredentialAndExpiry(verifiableCredential);
 
@@ -47,11 +44,6 @@ export async function isVerified(
     );
     const vcIssuedToAtLeastOneProjectOwner = (roleAddresses ?? []).some(role =>
       vcIssuedToAddress(verifiableCredential, role.toLowerCase())
-    );
-
-    // todo: why is vcHasValidProof always false?
-    console.log(
-      `isVerified: ${vcHasValidProof} : ${vcIssuedByValidIAMServer} : ${providerMatchesProject} : ${vcIssuedToAtLeastOneProjectOwner}`
     );
 
     return (
