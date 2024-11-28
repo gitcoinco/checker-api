@@ -15,6 +15,8 @@ export const validateSocialCredential = async (
 
   const { application } = req.body as SocialCredentialBody;
 
+  console.log('application', req.body);
+
   try {
     const result = await isVerified(application);
     res.json({
