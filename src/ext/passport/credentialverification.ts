@@ -1,4 +1,4 @@
-import { PassportVerifier } from './PassportVerifier';
+import { PassportVerifier } from '@gitcoin/gs-passport-verifier';
 import type {
   VerifiableCredential,
   ProjectApplicationForManager,
@@ -27,11 +27,14 @@ export async function isVerified(
       return false;
     }
 
-    console.log('verifiableCredential', verifiableCredential);
-    console.log('issuer', verifiableCredential.issuer);
+    // console.log('verifiableCredential', verifiableCredential);
+    // console.log('issuer', verifiableCredential.issuer);
 
-    const vcHasValidProof =
-      await verifier.verifyCredential(verifiableCredential);
+    const verifiedCredential =
+      await verifier.verifyCredentialAndExpiry(verifiableCredential);
+
+    const vcHasValidProof = verifiedCredential?.valid;
+
     const vcIssuedByValidIAMServer = verifiableCredential.issuer === IAM_SERVER;
     const providerMatchesProject = vcProviderMatchesProject(
       provider,
