@@ -1,4 +1,4 @@
-import { PassportVerifier } from '@gitcoinco/passport-sdk-verifier';
+import { PassportVerifier } from './PassportVerifier';
 import type {
   VerifiableCredential,
   ProjectApplicationForManager,
