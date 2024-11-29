@@ -47,7 +47,6 @@ export const requestEvaluation = async (
   applicationMetadata: ApplicationMetadata,
   questions: PromptEvaluationQuestions
 ): Promise<EvaluationSummaryInput> => {
-  console.log(applicationMetadata.application.project.title);
   const prompt: string = createAiEvaluationPrompt(
     roundMetadata,
     applicationMetadata,
