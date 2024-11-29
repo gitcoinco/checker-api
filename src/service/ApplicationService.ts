@@ -54,19 +54,21 @@ class ApplicationService {
     alloPoolId: string,
     chainId: number
   ): Promise<Application[]> {
-    return await applicationRepository
+    const applications = await applicationRepository
       .createQueryBuilder('application')
       .leftJoinAndSelect('application.pool', 'pool')
       .leftJoinAndSelect('application.evaluations', 'evaluation')
       .where('pool.alloPoolId = :alloPoolId', { alloPoolId })
       .andWhere('pool.chainId = :chainId', { chainId })
-      .andWhere(
-        'evaluation.id IS NULL OR evaluation.evaluatorType != :evaluatorType',
-        {
-          evaluatorType: EVALUATOR_TYPE.LLM_GPT3,
-        }
-      )
       .getMany();
+
+    const applicationsWithoutLLM = applications.filter(
+      application =>
+        !application.evaluations.some(
+          evaluation => evaluation.evaluatorType === EVALUATOR_TYPE.LLM_GPT3
+        )
+    );
+    return applicationsWithoutLLM;
   }
 
   async upsertApplicationsForPool(
