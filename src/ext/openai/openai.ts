@@ -54,7 +54,6 @@ export const requestEvaluation = async (
   );
   const result = await queryOpenAI(prompt);
   logger.info('Application evaluation complete', { result });
-  console.log('result', result);
   return JSON.parse(removeJsonCodeBlocks(result));
 };
 
