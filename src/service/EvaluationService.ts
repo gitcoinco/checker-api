@@ -91,17 +91,22 @@ class EvaluationService {
       throw new NotFoundError('Application not found');
     }
 
-    // Calculate the evaluator score
     let totalScore = 0;
     for (const question of questions) {
-      totalScore += question.answerEnum;
+      if (question.answerEnum === 0) {
+        // approved
+        totalScore += 1;
+      } else if (question.answerEnum === 2) {
+        // uncertain
+        totalScore += 0.5;
+      }
     }
 
-    // Normalize the score to be between 0 and 100
-    const maxPossibleScore = questions.length * 2; // Each question can contribute a maximum of 2 points (uncertain)
-    const evaluatorScore = Math.round(
-      (1 - totalScore / maxPossibleScore) * 100
-    );
+    // Calculate the maximum possible score
+    const maxPossibleScore = questions.length;
+
+    // Calculate the evaluator score as a percentage
+    const evaluatorScore = Math.round((totalScore / maxPossibleScore) * 100);
 
     // Set the evaluation status if the evaluator is not human
     if (evaluatorType !== EVALUATOR_TYPE.HUMAN) {
