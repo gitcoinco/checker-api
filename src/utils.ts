@@ -78,3 +78,36 @@ export async function isPoolManager<T>(
     return false;
   }
 }
+
+function extractAndParseJSON(s: string, pattern: RegExp): any[] {
+  const matches = s.match(pattern) ?? [];
+
+  const parsedMatches = matches
+    .map(match => {
+      try {
+        return JSON.parse(match as string);
+      } catch (e) {
+        console.error('Failed to parse JSON:', match);
+        return null;
+      }
+    })
+    .filter(parsed => parsed !== null);
+
+  if (parsedMatches.length === 0) {
+    throw new Error('No valid JSON found');
+  }
+
+  return parsedMatches;
+}
+
+export function parseObject(s: string): object {
+  const jsonObjPattern = /\{(?:[^{}]*|(?:\{(?:[^{}]*|(?:\{[^{}]*\}))*\}))*\}/g;
+  const parsedObjects = extractAndParseJSON(s, jsonObjPattern);
+  return parsedObjects[0];
+}
+
+export function parseArray(s: string): any[] {
+  const jsonArrayPattern = /\[[^[\]]*\]/g;
+  const parsedArrays = extractAndParseJSON(s, jsonArrayPattern);
+  return parsedArrays[0];
+}

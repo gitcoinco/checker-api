@@ -8,6 +8,7 @@ import {
 import { createLogger } from '@/logger';
 import { type EvaluationSummaryInput } from '@/service/EvaluationService';
 import { env } from '@/env';
+import { parseArray, parseObject } from '@/utils';
 
 const openai = new OpenAI({
   apiKey: env.OPENAI_API_KEY,
@@ -54,7 +55,7 @@ export const requestEvaluation = async (
   );
   const result = await queryOpenAI(prompt);
   logger.info('Application evaluation complete', { result });
-  return JSON.parse(removeJsonCodeBlocks(result));
+  return parseObject(result) as EvaluationSummaryInput;
 };
 
 export const requestEvaluationQuestions = async (
@@ -64,11 +65,5 @@ export const requestEvaluationQuestions = async (
   const prompt: string = createEvaluationQuestionPrompt(roundMetadata);
   const result = await queryOpenAI(prompt);
   logger.info('Received evaluation questions from OpenAI', { result });
-  return JSON.parse(removeJsonCodeBlocks(result)).map(line =>
-    line.replace(/^\d+\.\s*/, '').trim()
-  );
-};
-
-const removeJsonCodeBlocks = (str: string): string => {
-  return str.replace(/```json/g, '').replace(/```/g, '');
+  return parseArray(result).map(line => line.replace(/^\d+\.\s*/, '').trim());
 };
