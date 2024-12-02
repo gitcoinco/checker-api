@@ -84,7 +84,6 @@ export const createAiEvaluationPrompt = (
 export const createEvaluationQuestionPrompt = (
   roundMetadata: RoundMetadata
 ): string => {
-  console.log('roundMetadata', roundMetadata);
   return `Given the following description of a Grants round, generate 5 evaluation questions that a reviewer can answer with 'Yes', 'No', or 'Uncertain'. The questions should help assess the projects in this round, focusing on the following key aspects:
 
     Ensure that each question is focused on one specific aspect of evaluation, is clear and concise, and can be answered with 'Yes', 'No', or 'Uncertain'. Also, avoid overly simplistic or binary questions unless they are critical for assessing eligibility. The questions should help a reviewer evaluate the project in a thoughtful, critical, and fair manner.

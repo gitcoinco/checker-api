@@ -79,41 +79,35 @@ export async function isPoolManager<T>(
   }
 }
 
-export function parseObject(s): object {
-  const jsonObjPattern = /\{(?:[^{}]*|(?:\{(?:[^{}]*|(?:\{[^{}]*\}))*\}))*\}/g;
+function extractAndParseJSON(s: string, pattern: RegExp): any[] {
+  const matches = s.match(pattern) ?? [];
 
-  // Find all matches for JSON objects
-  const jsonObjs = s.match(jsonObjPattern) ?? [];
-
-  // Parse the matches
-  return jsonObjs
-    .map(obj => {
+  const parsedMatches = matches
+    .map(match => {
       try {
-        return JSON.parse(obj as string);
+        return JSON.parse(match as string);
       } catch (e) {
-        console.error('Failed to parse JSON object:', obj);
+        console.error('Failed to parse JSON:', match);
         return null;
       }
     })
-    .filter(obj => obj !== null)[0];
+    .filter(parsed => parsed !== null);
+
+  if (parsedMatches.length === 0) {
+    throw new Error('No valid JSON found');
+  }
+
+  return parsedMatches;
 }
 
-export function parseArray(s): string[] {
-  // Regular expression to find JSON arrays
+export function parseObject(s: string): object {
+  const jsonObjPattern = /\{(?:[^{}]*|(?:\{(?:[^{}]*|(?:\{[^{}]*\}))*\}))*\}/g;
+  const parsedObjects = extractAndParseJSON(s, jsonObjPattern);
+  return parsedObjects[0];
+}
+
+export function parseArray(s: string): any[] {
   const jsonArrayPattern = /\[[^[\]]*\]/g;
-
-  // Find all matches for JSON arrays
-  const jsonArrays = s.match(jsonArrayPattern) ?? [];
-
-  // Parse the matches
-  return jsonArrays
-    .map(arr => {
-      try {
-        return JSON.parse(arr as string);
-      } catch (e) {
-        console.error('Failed to parse JSON array:', arr);
-        return null;
-      }
-    })
-    .filter(arr => arr !== null)[0];
+  const parsedArrays = extractAndParseJSON(s, jsonArrayPattern);
+  return parsedArrays[0];
 }
