@@ -67,7 +67,7 @@ export const createAiEvaluationPrompt = (
   ${questionsString}
 
   Your question answers should NOT be 'yes', 'no', or 'uncertain'. Please use always 0 for 'yes', 1 for 'no', and 2 for 'uncertain'.
-    Please respond with ONLY the following JSON structure and NOTHING else:
+    Please respond with a valid JSON structure and NOTHING else:
     {
       "questions": [
         {

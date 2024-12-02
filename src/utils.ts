@@ -78,3 +78,42 @@ export async function isPoolManager<T>(
     return false;
   }
 }
+
+export function parseObject(s): object {
+  const jsonObjPattern = /\{(?:[^{}]*|(?:\{(?:[^{}]*|(?:\{[^{}]*\}))*\}))*\}/g;
+
+  // Find all matches for JSON objects
+  const jsonObjs = s.match(jsonObjPattern) ?? [];
+
+  // Parse the matches
+  return jsonObjs
+    .map(obj => {
+      try {
+        return JSON.parse(obj as string);
+      } catch (e) {
+        console.error('Failed to parse JSON object:', obj);
+        return null;
+      }
+    })
+    .filter(obj => obj !== null)[0];
+}
+
+export function parseArray(s): string[] {
+  // Regular expression to find JSON arrays
+  const jsonArrayPattern = /\[[^[\]]*\]/g;
+
+  // Find all matches for JSON arrays
+  const jsonArrays = s.match(jsonArrayPattern) ?? [];
+
+  // Parse the matches
+  return jsonArrays
+    .map(arr => {
+      try {
+        return JSON.parse(arr as string);
+      } catch (e) {
+        console.error('Failed to parse JSON array:', arr);
+        return null;
+      }
+    })
+    .filter(arr => arr !== null)[0];
+}
