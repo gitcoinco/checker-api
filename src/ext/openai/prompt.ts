@@ -55,8 +55,6 @@ export const createAiEvaluationPrompt = (
     applicationMetadata.application
   );
 
-  console.log('sanitizedApplicationMetadata', sanitizedApplicationMetadata);
-
   const questionsString = applicationQuestions
     .map((q, index) => `${index + 1}. ${q}`)
     .join('\n');
