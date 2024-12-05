@@ -39,11 +39,11 @@ const sanitizeAndReduceMetadata = (
 };
 
 const sanitizeRoundMetadata = (metadata: RoundMetadata): string => {
-  return sanitizeAndReduceMetadata(metadata, essentialRoundFields, 1000);
+  return sanitizeAndReduceMetadata(metadata, essentialRoundFields, 50000);
 };
 
 const sanitizeApplicationMetadata = (metadata: object): string => {
-  return sanitizeAndReduceMetadata(metadata, essentialApplicationFields, 3000);
+  return sanitizeAndReduceMetadata(metadata, essentialApplicationFields, 50000);
 };
 export const createAiEvaluationPrompt = (
   roundMetadata: RoundMetadata,
@@ -52,8 +52,10 @@ export const createAiEvaluationPrompt = (
 ): string => {
   const sanitizedRoundMetadata = sanitizeRoundMetadata(roundMetadata);
   const sanitizedApplicationMetadata = sanitizeApplicationMetadata(
-    applicationMetadata.application.project
+    applicationMetadata.application
   );
+
+  console.log('sanitizedApplicationMetadata', sanitizedApplicationMetadata);
 
   const questionsString = applicationQuestions
     .map((q, index) => `${index + 1}. ${q}`)
