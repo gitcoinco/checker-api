@@ -101,16 +101,34 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
 
   // ---- LLM evaluation ----
   // Trigger LLM evaluation for the pool if there are applications without evaluations
-  if (skipEvaluation !== true)
-    await triggerLLMEvaluationByPool(
+  let failedProjects: string[] = [];
+  if (skipEvaluation !== true) {
+    failedProjects = await triggerLLMEvaluationByPool(
       alloPoolId,
       chainId,
       indexerPoolData,
       evaluationQuestions
     );
-  // Log success and respond to the request
-  logger.info('successfully synced pool', pool);
-  res.status(200).json({ message: 'pool synced successfully' });
+  }
+
+  // Check if there are any failed projects and respond accordingly
+  if (failedProjects.length > 0) {
+    logger.info('Pool synced successfully with some projects failing', {
+      pool,
+      failedProjects,
+    });
+    res.status(207).json({
+      success: true,
+      message: 'Pool synced successfully, with some projects failing.',
+      failedProjects,
+    });
+  } else {
+    logger.info('Successfully synced pool', pool);
+    res.status(200).json({
+      success: true,
+      message: 'Pool synced successfully.',
+    });
+  }
 };
 
 const handlePoolEvaluationQuestions = async (
@@ -171,7 +189,7 @@ const triggerLLMEvaluationByPool = async (
   chainId: number,
   indexerPoolData: IndexerRoundWithApplications,
   evaluationQuestions: PromptEvaluationQuestions
-): Promise<void> => {
+): Promise<string[]> => {
   const applicationsWithoutLLM =
     await applicationService.getApplicationsWithoutLLMEvalutionsByAlloPoolId(
       alloPoolId,
@@ -212,5 +230,5 @@ const triggerLLMEvaluationByPool = async (
     logger.warn('Some applications were not found in indexerPoolData');
   }
 
-  await createLLMEvaluations(evaluationParamsArray);
+  return await createLLMEvaluations(evaluationParamsArray);
 };

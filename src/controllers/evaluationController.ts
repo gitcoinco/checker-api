@@ -300,8 +300,9 @@ const batchPromises = <T>(array: T[], batchSize: number): T[][] => {
 
 export const createLLMEvaluations = async (
   paramsArray: CreateLLMEvaluationParams[]
-): Promise<void> => {
+): Promise<string[]> => {
   const roundCache: Record<string, RoundWithApplications> = {};
+  const failedProjects: string[] = [];
 
   // Split the paramsArray into batches of 10
   const batchedParams = batchPromises(paramsArray, 10);
@@ -310,86 +311,95 @@ export const createLLMEvaluations = async (
     try {
       // Process each batch of promises concurrently
       const evaluationPromises = batch.map(async params => {
-        const evaluationQuestions =
-          params.questions === undefined || params.questions.length === 0
-            ? await evaluationService.getQuestionsByChainAndAlloPoolId(
-                params.chainId,
-                params.alloPoolId
-              )
-            : params.questions;
+        try {
+          const evaluationQuestions =
+            params.questions === undefined || params.questions.length === 0
+              ? await evaluationService.getQuestionsByChainAndAlloPoolId(
+                  params.chainId,
+                  params.alloPoolId
+                )
+              : params.questions;
 
-        if (evaluationQuestions === null || evaluationQuestions.length === 0) {
-          logger.error(
-            'createLLMEvaluations:Failed to get evaluation questions'
-          );
-          throw new Error('Failed to get evaluation questions');
-        }
-
-        let roundMetadata = params.roundMetadata;
-        let applicationMetadata = params.applicationMetadata;
-
-        // Check if the round is already in cache
-        if (roundMetadata == null || applicationMetadata == null) {
-          let round: RoundWithApplications | null;
-
-          // If the round is cached, use it
-          if (roundCache[params.alloPoolId] != null) {
-            round = roundCache[params.alloPoolId];
-            logger.debug(
-              `Using cached round data for roundId: ${params.alloPoolId}`
+          if (
+            evaluationQuestions === null ||
+            evaluationQuestions.length === 0
+          ) {
+            logger.error(
+              'createLLMEvaluations:Failed to get evaluation questions'
             );
-          } else {
-            // Fetch the round and store it in the cache
-            const [error, fetchedRound] = await catchError(
-              indexerClient.getRoundWithApplications({
-                chainId: params.chainId,
-                roundId: params.alloPoolId,
-              })
-            );
+            throw new Error('Failed to get evaluation questions');
+          }
 
-            if (error !== undefined || fetchedRound == null) {
-              logger.error('Failed to fetch round with applications');
-              throw new Error('Failed to fetch round with applications');
+          let roundMetadata = params.roundMetadata;
+          let applicationMetadata = params.applicationMetadata;
+
+          // Check if the round is already in cache
+          if (roundMetadata == null || applicationMetadata == null) {
+            let round: RoundWithApplications | null;
+
+            // If the round is cached, use it
+            if (roundCache[params.alloPoolId] != null) {
+              round = roundCache[params.alloPoolId];
+              logger.debug(
+                `Using cached round data for roundId: ${params.alloPoolId}`
+              );
+            } else {
+              // Fetch the round and store it in the cache
+              const [error, fetchedRound] = await catchError(
+                indexerClient.getRoundWithApplications({
+                  chainId: params.chainId,
+                  roundId: params.alloPoolId,
+                })
+              );
+
+              if (error !== undefined || fetchedRound == null) {
+                logger.error('Failed to fetch round with applications');
+                throw new Error('Failed to fetch round with applications');
+              }
+
+              round = fetchedRound;
+              roundCache[params.alloPoolId] = round;
+              logger.info(
+                `Fetched and cached round with ID: ${round.id}, which includes ${round.applications.length} applications`
+              );
             }
 
-            round = fetchedRound;
-            roundCache[params.alloPoolId] = round;
-            logger.info(
-              `Fetched and cached round with ID: ${round.id}, which includes ${round.applications.length} applications`
+            const application = round.applications.find(
+              app => app.id === params.alloApplicationId
             );
+            if (application == null) {
+              logger.error(
+                `Application with ID: ${params.alloApplicationId} not found in round`
+              );
+              throw new NotFoundError(
+                `Application with ID: ${params.alloApplicationId} not found in round`
+              );
+            }
+
+            roundMetadata = round.roundMetadata;
+            applicationMetadata = application.metadata;
           }
 
-          const application = round.applications.find(
-            app => app.id === params.alloApplicationId
+          const evaluation = await requestEvaluation(
+            roundMetadata,
+            applicationMetadata,
+            evaluationQuestions
           );
-          if (application == null) {
-            logger.error(
-              `Application with ID: ${params.alloApplicationId} not found in round`
-            );
-            throw new NotFoundError(
-              `Application with ID: ${params.alloApplicationId} not found in round`
-            );
-          }
 
-          roundMetadata = round.roundMetadata;
-          applicationMetadata = application.metadata;
+          await createEvaluation({
+            chainId: params.chainId,
+            alloPoolId: params.alloPoolId,
+            alloApplicationId: params.alloApplicationId,
+            cid: params.cid,
+            evaluator: params.evaluator,
+            summaryInput: evaluation,
+            evaluatorType: EVALUATOR_TYPE.LLM_GPT3,
+          });
+        } catch (error) {
+          // If an error occurs, add the project ID to the failedProjects array
+          failedProjects.push(params.alloApplicationId);
+          throw error;
         }
-
-        const evaluation = await requestEvaluation(
-          roundMetadata,
-          applicationMetadata,
-          evaluationQuestions
-        );
-
-        await createEvaluation({
-          chainId: params.chainId,
-          alloPoolId: params.alloPoolId,
-          alloApplicationId: params.alloApplicationId,
-          cid: params.cid,
-          evaluator: params.evaluator,
-          summaryInput: evaluation,
-          evaluatorType: EVALUATOR_TYPE.LLM_GPT3,
-        });
       });
 
       await Promise.all(evaluationPromises);
@@ -405,4 +415,6 @@ export const createLLMEvaluations = async (
       continue;
     }
   }
+
+  return failedProjects;
 };

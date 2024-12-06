@@ -18,31 +18,43 @@ const router = Router();
  *               alloPoolId:
  *                 type: string
  *                 description: The ID of the pool to create
- *                 example: "609"  # Example of poolId
+ *                 example: "609"
  *               chainId:
  *                 type: number
  *                 description: The chain ID associated with the pool
- *                 example: 42161  # Example of chainId (Arbitrum)
+ *                 example: 42161
  *               skipEvaluation:
- *                type: boolean
- *                description: Skip evaluation of the pool
- *                example: true
+ *                 type: boolean
+ *                 description: Skip evaluation of the pool
+ *                 example: true
  *             required:
  *               - alloPoolId
  *               - chainId
  *     responses:
  *       201:
- *         description: Pool created successfully
+ *         description: Pool synced successfully
+ *       207:
+ *         description: Pool synced successfully, with some projects failing
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Pool synced successfully, with some projects failing.
+ *                 failedProjects:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     example: "0xprojectId1"
  *       400:
  *         description: Invalid poolId or chainId format
  *       500:
  *         description: Internal server error
- *     examples:
- *       application/json:
- *         - value:
- *             alloPoolId: "609"
- *             chainId: "42161"
- *             skipEvaluation: true
  */
 router.post('/', syncPool);
 
