@@ -145,16 +145,34 @@ const handlePoolEvaluationQuestions = async (
     return questions.map(question => question.question);
   }
 
-  const [evalError, evaluationQuestions] = await catchError(
-    requestEvaluationQuestions(poolMetadata)
-  );
+  // Retry logic
+  let retries = 5;
+  let evalError;
+  let evaluationQuestions: undefined | PromptEvaluationQuestions;
 
-  if (evalError != null || evaluationQuestions == null) {
+  while (retries > 0) {
+    [evalError, evaluationQuestions] = await catchError(
+      requestEvaluationQuestions(poolMetadata)
+    );
+
+    if (evalError == null && evaluationQuestions != null) {
+      break;
+    }
+
+    retries--;
+    if (retries > 0) {
+      logger.warn(
+        `Retrying evaluation question request. Attempts remaining: ${retries}`
+      );
+    }
+  }
+
+  if (evaluationQuestions === undefined) {
     logger.error(
-      `Error requesting evaluation questions: ${evalError?.message}`
+      `Error requesting evaluation questions after 5 attempts: ${evalError?.message}`
     );
     throw new Error(
-      `Error requesting evaluation questions ${evalError?.message}`
+      `Error requesting evaluation questions: ${evalError?.message}`
     );
   }
 
