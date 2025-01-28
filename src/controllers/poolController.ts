@@ -246,45 +246,55 @@ const triggerLLMEvaluationByPool = async (
   indexerPoolData: IndexerRoundWithApplications,
   evaluationQuestions: PromptEvaluationQuestions
 ): Promise<string[]> => {
+  // Get applications without LLM evaluations
   const applicationsWithoutLLM =
     await applicationService.getApplicationsWithoutLLMEvalutionsByAlloPoolId(
       alloPoolId,
       chainId
     );
-  // Filter and limit applications to prepare for evaluation parameters
-  let applicationsForLLMReview = applicationsWithoutLLM
-    .map(application =>
-      indexerPoolData.applications.find(
-        poolApplication => poolApplication.id === application.alloApplicationId
-      )
-    )
-    .filter(poolApplication => poolApplication !== undefined); // Removes any undefined results
 
-  if (env.NODE_ENV === 'development') {
-    applicationsForLLMReview = applicationsForLLMReview.slice(0, 5); // Limit to first 2 applications in dev
+  if (applicationsWithoutLLM.length === 0) {
+    logger.info('No applications require LLM evaluation');
+    return [];
   }
 
-  // Map filtered applications to evaluation parameters
+  // Create a map for quick lookup - O(n) once vs O(n) for each find operation
+  const pendingApplicationsMap = new Map(
+    applicationsWithoutLLM.map(app => [app.alloApplicationId, app])
+  );
+
+  // Filter indexer applications to only those needing evaluation - O(1) per item vs O(n) per item with find()
+  const applicationsForLLMReview = indexerPoolData.applications.filter(app =>
+    pendingApplicationsMap.has(app.id)
+  );
+
+  // Development environment limit
+  const maxApplications = env.NODE_ENV === 'development' ? 5 : undefined;
+  const limitedApplications = applicationsForLLMReview.slice(
+    0,
+    maxApplications
+  );
+
+  // Prepare evaluation parameters with pre-loaded data
   const evaluationParamsArray: CreateLLMEvaluationParams[] =
-    applicationsForLLMReview.map(poolApplication => {
-      if (poolApplication == null) {
-        throw new Error('Unexpected undefined poolApplication');
-      }
-      return {
-        chainId,
-        alloPoolId,
-        alloApplicationId: poolApplication.id,
-        cid: poolApplication.metadataCid,
-        evaluator: addressFrom(1),
-        roundMetadata: indexerPoolData.roundMetadata,
-        applicationMetadata: poolApplication.metadata,
-        questions: evaluationQuestions,
-      };
-    });
+    limitedApplications.map(poolApplication => ({
+      chainId,
+      alloPoolId,
+      alloApplicationId: poolApplication.id,
+      cid: poolApplication.metadataCid,
+      evaluator: addressFrom(1),
+      roundMetadata: indexerPoolData.roundMetadata,
+      applicationMetadata: poolApplication.metadata,
+      questions: evaluationQuestions,
+    }));
 
-  if (evaluationParamsArray.length !== applicationsWithoutLLM.length) {
-    logger.warn('Some applications were not found in indexerPoolData');
+  if (evaluationParamsArray.length === 0) {
+    return [];
   }
+
+  logger.info(
+    `Triggering LLM evaluation for ${evaluationParamsArray.length} applications`
+  );
 
   return await createLLMEvaluations(evaluationParamsArray);
 };
