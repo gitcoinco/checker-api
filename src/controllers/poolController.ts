@@ -32,7 +32,7 @@ interface PoolIdChainId {
 }
 
 // Create a map to store ongoing sync operations
-const syncOperations = new Map<string, Promise<void>>();
+const syncOperations = new Map<string, Promise<string[]>>();
 
 // Rate limiter middleware
 export const syncPoolRateLimiter = rateLimit({
@@ -49,12 +49,15 @@ interface SyncPoolParams {
 
 // Throttled sync function with proper types
 const throttledSync = throttle(
-  async (params: SyncPoolParams): Promise<void> => {
+  async (params: SyncPoolParams): Promise<string[]> => {
     const key = `${params.chainId}-${params.alloPoolId}`;
 
     // If there's already a sync operation in progress for this pool, return it
     if (syncOperations.has(key)) {
-      return await syncOperations.get(key);
+      const existingOperation = syncOperations.get(key);
+      if (existingOperation !== undefined) {
+        return await existingOperation;
+      }
     }
 
     const syncPromise = (async () => {
@@ -113,7 +116,6 @@ const throttledSync = throttle(
             evaluationQuestions
           );
         }
-
         return failedProjects;
       } finally {
         syncOperations.delete(key);
@@ -144,13 +146,17 @@ export const syncPool = async (req: Request, res: Response): Promise<void> => {
       skipEvaluation,
     });
 
-    if (Array.isArray(failedProjects) && failedProjects.length > 0) {
+    if (failedProjects.length > 0) {
+      logger.info('Pool synced successfully with some projects failing', {
+        failedProjects,
+      });
       res.status(207).json({
         success: true,
         message: 'Pool synced successfully, with some projects failing.',
         failedProjects,
       });
     } else {
+      logger.info('Successfully synced pool');
       res.status(200).json({
         success: true,
         message: 'Pool synced successfully.',
@@ -296,5 +302,6 @@ const triggerLLMEvaluationByPool = async (
     `Triggering LLM evaluation for ${evaluationParamsArray.length} applications`
   );
 
-  return await createLLMEvaluations(evaluationParamsArray);
+  const failedProjects = await createLLMEvaluations(evaluationParamsArray);
+  return failedProjects;
 };
