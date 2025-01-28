@@ -39,7 +39,7 @@ class IndexerClient {
     }
 
     this.logger = createLogger('Indexer.ts');
-    
+
     // Configure cache for 4GB RAM, 2 CPU system
     // Allocate ~20% of memory for caching (800MB)
     this.cache = new LRUCache({
@@ -50,7 +50,7 @@ class IndexerClient {
       },
       ttl: 1000 * 60 * 5, // 5 minutes TTL for cache values
       updateAgeOnGet: true,
-      allowStale: true // Allow serving stale items while refreshing
+      allowStale: true, // Allow serving stale items while refreshing
     });
   }
 
@@ -121,9 +121,12 @@ class IndexerClient {
     chainId: number;
     roundId: string;
   }): Promise<RoundWithApplications | null> {
-    const cacheKey = this.getCacheKey('getRoundWithApplications', { chainId, roundId });
+    const cacheKey = this.getCacheKey('getRoundWithApplications', {
+      chainId,
+      roundId,
+    });
     const cached = this.cache.get(cacheKey);
-    
+
     if (cached) {
       this.logger.debug(`Cache hit for round ${roundId}`);
       return JSON.parse(cached) as RoundWithApplications;

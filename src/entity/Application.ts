@@ -5,12 +5,14 @@ import {
   ManyToOne,
   OneToMany,
   Unique,
+  Index,
 } from 'typeorm';
 import { Profile } from '@/entity/Profile';
 import { Pool } from '@/entity/Pool';
 import { Evaluation } from '@/entity/Evaluation';
 
 @Entity()
+@Index(['poolId', 'chainId'])
 @Unique(['alloApplicationId', 'poolId', 'chainId'])
 export class Application {
   @PrimaryGeneratedColumn()
@@ -19,6 +21,7 @@ export class Application {
   @Column()
   chainId: number;
 
+  @Index()
   @Column()
   alloApplicationId: string;
 

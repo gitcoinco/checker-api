@@ -3,13 +3,13 @@ import {
   Column,
   Entity,
   OneToMany,
-  Unique,
+  Index,
 } from 'typeorm';
 import { EvaluationQuestion } from '@/entity/EvaluationQuestion';
 import { Application } from '@/entity/Application';
 
 @Entity()
-@Unique(['chainId', 'alloPoolId'])
+@Index(['chainId', 'alloPoolId'], { unique: true })
 export class Pool {
   @PrimaryGeneratedColumn()
   id: number;

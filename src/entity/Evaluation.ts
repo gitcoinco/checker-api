@@ -7,6 +7,7 @@ import {
   Unique,
   UpdateDateColumn,
   CreateDateColumn,
+  Index,
 } from 'typeorm';
 import { Application } from '@/entity/Application';
 import { EvaluationAnswer } from '@/entity/EvaluationAnswer';
@@ -23,6 +24,7 @@ export enum EVALUATION_STATUS {
 }
 
 @Entity()
+@Index(['evaluator', 'evaluatorType'])
 @Unique(['evaluator', 'applicationId'])
 export class Evaluation {
   @PrimaryGeneratedColumn()
@@ -43,6 +45,7 @@ export class Evaluation {
   @Column()
   evaluatorScore: number;
 
+  @Index()
   @Column({
     type: 'enum',
     enum: EVALUATION_STATUS,
@@ -64,7 +67,8 @@ export class Evaluation {
   )
   evaluationAnswer: EvaluationAnswer[];
 
-  @Column() // Explicitly define the foreign key column for application
+  @Index()
+  @Column()
   applicationId: number;
 
   @CreateDateColumn({ type: 'timestamp' })
