@@ -15,7 +15,7 @@ import {
 import type { Logger } from 'winston';
 import { IsNullError } from '@/errors';
 import { env } from '@/env';
-import { LRUCache } from 'lru-cache';
+import LRUCache = require('lru-cache');
 
 class IndexerClient {
   private static instance: IndexerClient | null = null;

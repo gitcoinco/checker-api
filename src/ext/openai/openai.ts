@@ -10,7 +10,7 @@ import { type EvaluationSummaryInput } from '@/service/EvaluationService';
 import { env } from '@/env';
 import { parseArray, parseObject } from '@/utils';
 import pLimit from 'p-limit';
-import { LRUCache } from 'lru-cache';
+import LRUCache = require('lru-cache');
 
 const openai = new OpenAI({
   apiKey: env.OPENAI_API_KEY,
