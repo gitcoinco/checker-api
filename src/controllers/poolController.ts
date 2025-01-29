@@ -20,6 +20,8 @@ import {
 import { type Pool } from '@/entity/Pool';
 import { IsNullError, NotFoundError } from '@/errors';
 import { env } from '@/env';
+import { rateLimit } from 'express-rate-limit';
+import { throttle } from 'lodash';
 
 const logger = createLogger();
 
@@ -29,6 +31,103 @@ interface PoolIdChainId {
   skipEvaluation?: boolean;
 }
 
+// Create a map to store ongoing sync operations
+const syncOperations = new Map<string, Promise<string[]>>();
+
+// Rate limiter middleware
+export const syncPoolRateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // limit each IP to 10 requests per windowMs
+  message: 'Too many sync requests, please try again later',
+});
+
+interface SyncPoolParams {
+  chainId: number;
+  alloPoolId: string;
+  skipEvaluation?: boolean;
+}
+
+// Throttled sync function with proper types
+const throttledSync = throttle(
+  async (params: SyncPoolParams): Promise<string[]> => {
+    const key = `${params.chainId}-${params.alloPoolId}`;
+
+    // If there's already a sync operation in progress for this pool, return it
+    if (syncOperations.has(key)) {
+      const existingOperation = syncOperations.get(key);
+      if (existingOperation !== undefined) {
+        return await existingOperation;
+      }
+    }
+
+    const syncPromise = (async () => {
+      try {
+        // ---- Fetch pool data from the indexer ----
+        const [errorFetching, indexerPoolData] = await catchError(
+          indexerClient.getRoundWithApplications({
+            chainId: params.chainId,
+            roundId: params.alloPoolId,
+          })
+        );
+
+        // Handle errors or missing data from the indexer
+        if (errorFetching != null || indexerPoolData == null) {
+          logger.warn(
+            `No pool found for chainId: ${params.chainId}, alloPoolId: ${params.alloPoolId}`
+          );
+          throw new NotFoundError(`Pool not found on indexer`);
+        }
+
+        // ---- Get or create the pool ----
+        const [error, pool] = await catchError(
+          poolService.upsertPool(params.chainId, params.alloPoolId)
+        );
+
+        // Handle errors during the upsert operation
+        if (error != null || pool == null) {
+          logger.error(`Failed to upsert pool: ${error?.message}`);
+          throw new IsNullError(`Error upserting pool`);
+        }
+
+        // ---- LLM evaluation questions ----
+        const [evalQuestionsError, evaluationQuestions] = await catchError(
+          handlePoolEvaluationQuestions(pool, indexerPoolData.roundMetadata)
+        );
+
+        // Handle errors during the evaluation question handling
+        if (evalQuestionsError != null || evaluationQuestions == null) {
+          throw new IsNullError(`Error handling evaluation questions`);
+        }
+
+        // ---- Update Applications ----
+        await updateApplications(
+          params.chainId,
+          params.alloPoolId,
+          indexerPoolData
+        );
+
+        // ---- LLM evaluation ----
+        let failedProjects: string[] = [];
+        if (params.skipEvaluation !== true) {
+          failedProjects = await triggerLLMEvaluationByPool(
+            params.alloPoolId,
+            params.chainId,
+            indexerPoolData,
+            evaluationQuestions
+          );
+        }
+        return failedProjects;
+      } finally {
+        syncOperations.delete(key);
+      }
+    })();
+
+    syncOperations.set(key, syncPromise);
+    return await syncPromise;
+  },
+  5000
+); // Throttle to one call per 5 seconds
+
 /**
  * Synchronizes a pool by fetching data from the indexer, updating the pool, handling evaluation questions,
  * updating applications, and triggering LLM evaluation if applicable.
@@ -37,97 +136,42 @@ interface PoolIdChainId {
  * @param res - Express response object
  */
 export const syncPool = async (req: Request, res: Response): Promise<void> => {
-  // Validate the incoming request
   validateRequest(req, res);
-
-  // Extract chainId and alloPoolId from the request body
   const { chainId, alloPoolId, skipEvaluation } = req.body as PoolIdChainId;
 
-  // Log the receipt of the update request
-  logger.info(
-    `Received update request for chainId: ${chainId}, alloPoolId: ${alloPoolId}, skipEvaluation: ${skipEvaluation}`
-  );
-
-  // ---- Fetch pool data from the indexer ----
-  const [errorFetching, indexerPoolData] = await catchError(
-    indexerClient.getRoundWithApplications({
+  try {
+    const failedProjects = await throttledSync({
       chainId,
-      roundId: alloPoolId,
-    })
-  );
-
-  // Handle errors or missing data from the indexer
-  if (errorFetching != null || indexerPoolData == null) {
-    logger.warn(
-      `No pool found for chainId: ${chainId}, alloPoolId: ${alloPoolId}`
-    );
-    res.status(404).json({ message: 'Pool not found on indexer' });
-    throw new NotFoundError(`Pool not found on indexer`);
-  }
-
-  // ---- Get or create the pool ----
-  // Upsert the pool with the fetched data
-  const [error, pool] = await catchError(
-    poolService.upsertPool(chainId, alloPoolId)
-  );
-
-  // Handle errors during the upsert operation
-  if (error != null || pool == null) {
-    logger.error(`Failed to upsert pool: ${error?.message}`);
-    res
-      .status(500)
-      .json({ message: 'Error upserting pool', error: error?.message });
-    throw new IsNullError(`Error upserting pool`);
-  }
-
-  // ---- LLM evaluation questions ----
-  // Fetch evaluation questions from the pool or request new questions
-  const [evalQuestionsError, evaluationQuestions] = await catchError(
-    handlePoolEvaluationQuestions(pool, indexerPoolData.roundMetadata)
-  );
-
-  // Handle errors during the evaluation question handling
-  if (evalQuestionsError != null || evaluationQuestions == null) {
-    res.status(500).json({
-      message: 'Error handling evaluation questions',
-      error: evalQuestionsError?.message,
-    });
-    throw new IsNullError(`Error handling evaluation questions`);
-  }
-
-  // ---- Update Applications ----
-  // Update the pool with the applications from the indexer
-  await updateApplications(chainId, alloPoolId, indexerPoolData);
-
-  // ---- LLM evaluation ----
-  // Trigger LLM evaluation for the pool if there are applications without evaluations
-  let failedProjects: string[] = [];
-  if (skipEvaluation !== true) {
-    failedProjects = await triggerLLMEvaluationByPool(
       alloPoolId,
-      chainId,
-      indexerPoolData,
-      evaluationQuestions
-    );
-  }
+      skipEvaluation,
+    });
 
-  // Check if there are any failed projects and respond accordingly
-  if (failedProjects.length > 0) {
-    logger.info('Pool synced successfully with some projects failing', {
-      pool,
-      failedProjects,
-    });
-    res.status(207).json({
-      success: true,
-      message: 'Pool synced successfully, with some projects failing.',
-      failedProjects,
-    });
-  } else {
-    logger.info('Successfully synced pool', pool);
-    res.status(200).json({
-      success: true,
-      message: 'Pool synced successfully.',
-    });
+    if (failedProjects.length > 0) {
+      logger.info('Pool synced successfully with some projects failing', {
+        failedProjects,
+      });
+      res.status(207).json({
+        success: true,
+        message: 'Pool synced successfully, with some projects failing.',
+        failedProjects,
+      });
+    } else {
+      logger.info('Successfully synced pool');
+      res.status(200).json({
+        success: true,
+        message: 'Pool synced successfully.',
+      });
+    }
+  } catch (error) {
+    logger.error('Error syncing pool:', error);
+    if (error instanceof NotFoundError) {
+      res.status(404).json({ message: error.message });
+    } else {
+      res.status(500).json({
+        message: 'Error syncing pool',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
   }
 };
 
@@ -208,45 +252,56 @@ const triggerLLMEvaluationByPool = async (
   indexerPoolData: IndexerRoundWithApplications,
   evaluationQuestions: PromptEvaluationQuestions
 ): Promise<string[]> => {
+  // Get applications without LLM evaluations
   const applicationsWithoutLLM =
     await applicationService.getApplicationsWithoutLLMEvalutionsByAlloPoolId(
       alloPoolId,
       chainId
     );
-  // Filter and limit applications to prepare for evaluation parameters
-  let applicationsForLLMReview = applicationsWithoutLLM
-    .map(application =>
-      indexerPoolData.applications.find(
-        poolApplication => poolApplication.id === application.alloApplicationId
-      )
-    )
-    .filter(poolApplication => poolApplication !== undefined); // Removes any undefined results
 
-  if (env.NODE_ENV === 'development') {
-    applicationsForLLMReview = applicationsForLLMReview.slice(0, 5); // Limit to first 2 applications in dev
+  if (applicationsWithoutLLM.length === 0) {
+    logger.info('No applications require LLM evaluation');
+    return [];
   }
 
-  // Map filtered applications to evaluation parameters
+  // Create a map for quick lookup - O(n) once vs O(n) for each find operation
+  const pendingApplicationsMap = new Map(
+    applicationsWithoutLLM.map(app => [app.alloApplicationId, app])
+  );
+
+  // Filter indexer applications to only those needing evaluation - O(1) per item vs O(n) per item with find()
+  const applicationsForLLMReview = indexerPoolData.applications.filter(app =>
+    pendingApplicationsMap.has(app.id)
+  );
+
+  // Development environment limit
+  const maxApplications = env.NODE_ENV === 'development' ? 5 : undefined;
+  const limitedApplications = applicationsForLLMReview.slice(
+    0,
+    maxApplications
+  );
+
+  // Prepare evaluation parameters with pre-loaded data
   const evaluationParamsArray: CreateLLMEvaluationParams[] =
-    applicationsForLLMReview.map(poolApplication => {
-      if (poolApplication == null) {
-        throw new Error('Unexpected undefined poolApplication');
-      }
-      return {
-        chainId,
-        alloPoolId,
-        alloApplicationId: poolApplication.id,
-        cid: poolApplication.metadataCid,
-        evaluator: addressFrom(1),
-        roundMetadata: indexerPoolData.roundMetadata,
-        applicationMetadata: poolApplication.metadata,
-        questions: evaluationQuestions,
-      };
-    });
+    limitedApplications.map(poolApplication => ({
+      chainId,
+      alloPoolId,
+      alloApplicationId: poolApplication.id,
+      cid: poolApplication.metadataCid,
+      evaluator: addressFrom(1),
+      roundMetadata: indexerPoolData.roundMetadata,
+      applicationMetadata: poolApplication.metadata,
+      questions: evaluationQuestions,
+    }));
 
-  if (evaluationParamsArray.length !== applicationsWithoutLLM.length) {
-    logger.warn('Some applications were not found in indexerPoolData');
+  if (evaluationParamsArray.length === 0) {
+    return [];
   }
 
-  return await createLLMEvaluations(evaluationParamsArray);
+  logger.info(
+    `Triggering LLM evaluation for ${evaluationParamsArray.length} applications`
+  );
+
+  const failedProjects = await createLLMEvaluations(evaluationParamsArray);
+  return failedProjects;
 };

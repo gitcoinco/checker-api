@@ -15,11 +15,13 @@ import {
 import type { Logger } from 'winston';
 import { IsNullError } from '@/errors';
 import { env } from '@/env';
+import LRUCache = require('lru-cache');
 
 class IndexerClient {
   private static instance: IndexerClient | null = null;
   private readonly indexerEndpoint: string;
   private readonly logger: Logger;
+  private readonly cache: LRUCache<string, any>;
 
   private constructor() {
     this.indexerEndpoint = env.INDEXER_URL ?? '';
@@ -37,6 +39,19 @@ class IndexerClient {
     }
 
     this.logger = createLogger('Indexer.ts');
+
+    // Configure cache for 4GB RAM, 2 CPU system
+    // Allocate ~20% of memory for caching (800MB)
+    this.cache = new LRUCache({
+      maxSize: 800 * 1024 * 1024, // 800MB max cache size
+      sizeCalculation: (value, key) => {
+        // Rough estimation of object size in bytes
+        return JSON.stringify(value).length * 2;
+      },
+      ttl: 1000 * 60 * 5, // 5 minutes TTL for cache values
+      updateAgeOnGet: true,
+      allowStale: true, // Allow serving stale items while refreshing
+    });
   }
 
   public static getInstance(): IndexerClient {
@@ -44,6 +59,10 @@ class IndexerClient {
       IndexerClient.instance = new IndexerClient();
     }
     return IndexerClient.instance;
+  }
+
+  private getCacheKey(method: string, params: object): string {
+    return `${method}:${JSON.stringify(params)}`;
   }
 
   async getRoundManager({
@@ -102,6 +121,19 @@ class IndexerClient {
     chainId: number;
     roundId: string;
   }): Promise<RoundWithApplications | null> {
+    const cacheKey = this.getCacheKey('getRoundWithApplications', {
+      chainId,
+      roundId,
+    });
+    const cached = this.cache.get(cacheKey);
+
+    if (cached) {
+      this.logger.debug(`Cache hit for round ${roundId}`);
+      return JSON.parse(cached) as RoundWithApplications;
+    } else {
+      this.logger.debug(`Cache miss for round ${roundId}`);
+    }
+
     this.logger.debug(
       `Requesting round with applications for roundId: ${roundId}, chainId: ${chainId}`
     );
@@ -126,6 +158,9 @@ class IndexerClient {
       }
 
       const round = response.rounds[0];
+
+      // Cache the result
+      this.cache.set(cacheKey, round);
 
       this.logger.info(
         `Successfully fetched round with ID: ${round.id}, which includes ${round.applications.length} applications`

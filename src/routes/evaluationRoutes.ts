@@ -1,7 +1,10 @@
 import {
   evaluateApplication,
+  evaluationRateLimiter,
   recreateEvaluationQuestions,
+  recreateEvaluationQuestionsLimiter,
   triggerLLMEvaluation,
+  triggerLLMEvaluationLimiter,
 } from '@/controllers/evaluationController';
 import { Router } from 'express';
 
@@ -95,7 +98,7 @@ const router = Router();
  *       500:
  *         description: "Internal Server Error"
  */
-router.post('/', evaluateApplication);
+router.post('/', evaluationRateLimiter, evaluateApplication);
 
 /**
  * @swagger
@@ -146,7 +149,7 @@ router.post('/', evaluateApplication);
  *       500:
  *         description: "Internal Server Error"
  */
-router.post('/llm', triggerLLMEvaluation);
+router.post('/llm', triggerLLMEvaluationLimiter, triggerLLMEvaluation);
 
 /**
  * @swagger
@@ -192,6 +195,10 @@ router.post('/llm', triggerLLMEvaluation);
  *       500:
  *         description: "Internal Server Error"
  */
-router.post('/recreate-questions', recreateEvaluationQuestions);
+router.post(
+  '/recreate-questions',
+  recreateEvaluationQuestionsLimiter,
+  recreateEvaluationQuestions
+);
 
 export default router;
