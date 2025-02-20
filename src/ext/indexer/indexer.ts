@@ -85,9 +85,11 @@ class IndexerClient {
       const response: ManagerRolesResponse = await request(
         this.indexerEndpoint,
         getRoundManager,
-        requestVariables
+        requestVariables,
+        {
+          'x-hasura-admin-secret': env.INDEXER_ADMIN_SECRET,
+        }
       );
-
       if (response.rounds.length === 0) {
         this.logger.warn(
           `No round found for poolId: ${alloPoolId} on chainId: ${chainId}`
@@ -97,7 +99,7 @@ class IndexerClient {
 
       const round = response.rounds[0];
 
-      if (round.roles.length === 0) {
+      if (round.roundRoles.length === 0) {
         this.logger.warn(
           `No manager found for poolId: ${alloPoolId} on chainId: ${chainId}`
         );
@@ -105,7 +107,7 @@ class IndexerClient {
       }
 
       this.logger.info(`Successfully fetched round manager`);
-      return round.roles.map(role => role.address);
+      return round.roundRoles.map(role => role.address);
     } catch (error) {
       this.logger.error(`Failed to fetch round manager: ${error.message}`, {
         error,
@@ -147,7 +149,10 @@ class IndexerClient {
       const response: RoundApplicationsQueryResponse = await request(
         this.indexerEndpoint,
         getRoundWithApplications,
-        requestVariables
+        requestVariables,
+        {
+          'x-hasura-admin-secret': env.INDEXER_ADMIN_SECRET,
+        }
       );
 
       if (response.rounds.length === 0) {
@@ -194,10 +199,13 @@ class IndexerClient {
       const response: ApplicationRoundQueryResponse = await request(
         this.indexerEndpoint,
         getApplicationWithRound,
-        requestVariables
+        requestVariables,
+        {
+          'x-hasura-admin-secret': env.INDEXER_ADMIN_SECRET,
+        }
       );
 
-      const application = response.application;
+      const application = response.applications[0];
 
       if (application == null) {
         this.logger.warn(
@@ -205,7 +213,7 @@ class IndexerClient {
         );
         return null;
       }
-      return response.application;
+      return application;
     } catch (error) {
       this.logger.error(
         `Failed to fetch round with single application: ${error.message}`,

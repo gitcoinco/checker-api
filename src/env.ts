@@ -10,6 +10,7 @@ interface EnvVars {
   SYNCHRONIZE: string;
   LOGGING: string;
   INDEXER_URL: string;
+  INDEXER_ADMIN_SECRET: string;
   OPENAI_API_KEY: string;
   [key: string]: string | number | undefined;
 }
@@ -25,6 +26,7 @@ export const env: EnvVars = {
   SYNCHRONIZE: process.env.SYNCHRONIZE ?? 'false',
   LOGGING: process.env.LOGGING ?? 'false',
   INDEXER_URL: process.env.INDEXER_URL ?? '',
+  INDEXER_ADMIN_SECRET: process.env.INDEXER_ADMIN_SECRET ?? '',
   OPENAI_API_KEY: process.env.OPENAI_API_KEY ?? '',
   ...process.env,
 };
