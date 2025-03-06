@@ -71,7 +71,11 @@ const throttledSync = throttle(
         );
 
         // Handle errors or missing data from the indexer
-        if (errorFetching != null || indexerPoolData == null) {
+        if (
+          errorFetching !== undefined ||
+          indexerPoolData === undefined ||
+          indexerPoolData === null
+        ) {
           logger.warn(
             `No pool found for chainId: ${params.chainId}, alloPoolId: ${params.alloPoolId}`
           );
@@ -84,7 +88,7 @@ const throttledSync = throttle(
         );
 
         // Handle errors during the upsert operation
-        if (error != null || pool == null) {
+        if (error !== undefined || pool === undefined) {
           logger.error(`Failed to upsert pool: ${error?.message}`);
           throw new IsNullError(`Error upserting pool`);
         }
@@ -95,7 +99,10 @@ const throttledSync = throttle(
         );
 
         // Handle errors during the evaluation question handling
-        if (evalQuestionsError != null || evaluationQuestions == null) {
+        if (
+          evalQuestionsError !== undefined ||
+          evaluationQuestions === undefined
+        ) {
           throw new IsNullError(`Error handling evaluation questions`);
         }
 
@@ -199,7 +206,7 @@ const handlePoolEvaluationQuestions = async (
       requestEvaluationQuestions(poolMetadata)
     );
 
-    if (evalError == null && evaluationQuestions != null) {
+    if (evalError === undefined && evaluationQuestions !== undefined) {
       break;
     }
 

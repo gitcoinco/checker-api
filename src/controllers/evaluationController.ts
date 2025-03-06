@@ -173,7 +173,7 @@ export const evaluateApplication = async (
     )
   );
 
-  if (errorFetching !== undefined || application === null) {
+  if (errorFetching !== undefined || application === undefined) {
     logger.warn(
       `No application found for alloApplicationId: ${alloApplicationId}`
     );
@@ -185,7 +185,7 @@ export const evaluateApplication = async (
     poolService.getPoolByChainIdAndAlloPoolId(chainId, alloPoolId)
   );
 
-  if (errorGetPool !== undefined || pool == null) {
+  if (errorGetPool !== undefined || pool === undefined) {
     logger.warn(`No pool found for poolId: ${alloPoolId}`);
     res.status(404).json({ message: 'Pool not found' });
     return;
@@ -195,7 +195,7 @@ export const evaluateApplication = async (
     createEvaluation(createEvaluationParams)
   );
 
-  if (evaluationError !== undefined || evaluationResponse === null) {
+  if (evaluationError !== undefined || evaluationResponse === undefined) {
     logger.error(
       'Evaluation creation failed:',
       evaluationError ?? 'Unknown error'
@@ -223,7 +223,7 @@ export const createEvaluation = async (
     evaluationService.createEvaluationWithAnswers(params)
   );
 
-  if (evaluationError !== undefined || evaluation == null) {
+  if (evaluationError !== undefined || evaluation === undefined) {
     logger.error('Failed to create evaluation: Evaluation is null.undefined');
     throw new IsNullError('Evaluation is null/undefined');
   }
@@ -278,7 +278,11 @@ export const triggerLLMEvaluation = async (
     })
   );
 
-  if (errorFetching != null || indexerApplicationData == null) {
+  if (
+    errorFetching !== undefined ||
+    indexerApplicationData === undefined ||
+    indexerApplicationData === null
+  ) {
     logger.warn(
       `No pool found for chainId: ${chainId}, alloPoolId: ${alloPoolId}`
     );
@@ -403,7 +407,11 @@ async function processSingleEvaluation(
           })
         );
 
-        if (error !== undefined || fetchedRound == null) {
+        if (
+          error !== undefined ||
+          fetchedRound === undefined ||
+          fetchedRound === null
+        ) {
           logger.error('Failed to fetch round with applications');
           throw new Error('Failed to fetch round with applications');
         }
