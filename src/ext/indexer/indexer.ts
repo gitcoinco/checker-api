@@ -129,7 +129,7 @@ class IndexerClient {
 
     if (cached) {
       this.logger.debug(`Cache hit for round ${roundId}`);
-      return JSON.parse(cached) as RoundWithApplications;
+      return cached as RoundWithApplications;
     } else {
       this.logger.debug(`Cache miss for round ${roundId}`);
     }
