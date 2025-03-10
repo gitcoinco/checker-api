@@ -1,38 +1,40 @@
 import { type MigrationInterface, type QueryRunner } from "typeorm";
 
-export class AddPerformanceIndexes1234567890123 implements MigrationInterface {
+export class AddIndexes1738025911271 implements MigrationInterface {
+    name = 'AddIndexes1738025911271'
+    
     public async up(queryRunner: QueryRunner): Promise<void> {
         // Indexes for Pool lookups
         await queryRunner.query(`
             CREATE INDEX IF NOT EXISTS idx_pool_chain_allo_pool 
-            ON pool(chain_id, allo_pool_id);
+            ON "pool"("chainId", "alloPoolId");
         `);
 
         // Indexes for Application lookups
         await queryRunner.query(`
             CREATE INDEX IF NOT EXISTS idx_application_pool_chain 
-            ON application(pool_id, chain_id);
+            ON "application"("poolId", "chainId");
             
             CREATE INDEX IF NOT EXISTS idx_application_allo_id 
-            ON application(allo_application_id);
+            ON "application"("alloApplicationId");
         `);
 
         // Indexes for Evaluation lookups
         await queryRunner.query(`
             CREATE INDEX IF NOT EXISTS idx_evaluation_application 
-            ON evaluation(application_id);
+            ON "evaluation"("applicationId");
             
             CREATE INDEX IF NOT EXISTS idx_evaluation_evaluator 
-            ON evaluation(evaluator, evaluator_type);
+            ON "evaluation"("evaluator", "evaluatorType");
             
             CREATE INDEX IF NOT EXISTS idx_evaluation_status 
-            ON evaluation(evaluation_status);
+            ON "evaluation"("evaluationStatus");
         `);
 
         // Indexes for EvaluationQuestion lookups
         await queryRunner.query(`
             CREATE INDEX IF NOT EXISTS idx_eval_question_pool 
-            ON evaluation_question(pool_id, question_index);
+            ON "evaluation_question"("poolId", "questionIndex");
         `);
     }
 
