@@ -59,14 +59,23 @@ export async function isPoolManager<T>(
   chainId: number,
   alloPoolId: string
 ): Promise<boolean> {
-  const validAddresses = await indexerClient.getRoundManager({
-    chainId,
-    alloPoolId,
-  });
+  const [error, validAddresses] = await catchError(
+    indexerClient.getRoundManager({
+      chainId,
+      alloPoolId,
+    })
+  );
+
+  if (error !== undefined || validAddresses === undefined) {
+    logger.error('Failed to fetch pool manager', { error });
+    return false;
+  }
+
   if (env.NODE_ENV === 'development' && signature === '0xdeadbeef') {
     logger.info('Skipping signature check in development mode');
     return true;
   }
+
   try {
     const address = await recoverSignerAddress(obj, signature);
     logger.info(`Recovered address: ${address}`);

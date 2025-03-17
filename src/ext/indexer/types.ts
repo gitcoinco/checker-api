@@ -1,3 +1,4 @@
+// 1. Basic Types & Enums
 export type Address = `0x${string}`;
 
 export enum Status {
@@ -6,6 +7,7 @@ export enum Status {
   REJECTED = 'REJECTED',
 }
 
+// 2. Metadata & Supporting Interfaces
 export interface ApplicationMetadata {
   signature: string;
   application: {
@@ -52,34 +54,48 @@ export interface ProjectMetadata {
   projectTwitter?: string;
   userGithub?: string;
   projectGithub?: string;
-  // credentials: ProjectCredentials;
   owners: Array<{ address: string }>;
   createdAt: number;
   lastUpdated: number;
 }
 
-export interface Application {
+// 3. Base Interfaces (Used in Multiple Places)
+export interface BaseProject {
+  metadata: ProjectMetadata;
+  metadataCid: string;
+}
+
+export interface BaseApplication {
   id: string;
   metadata: ApplicationMetadata;
   metadataCid: string;
   status: Status;
   projectId: string;
-  project: {
-    metadata: ProjectMetadata;
-    metadataCid: string;
-  };
 }
 
-export interface RoundWithApplications {
+// 4. Extended Implementations
+export interface Application extends BaseApplication {
+  project: BaseProject;
+}
+
+export interface ApplicationQuery extends BaseApplication {
+  projects: BaseProject[];
+}
+
+export interface BaseRound<T extends BaseApplication> {
   chainId: number;
   id: string;
   roundMetadata: RoundMetadata;
   roundMetadataCid: string;
-  applications: Application[];
+  applications: T[];
 }
 
+export type RoundWithApplications = BaseRound<Application>;
+export type RoundWithApplicationsQuery = BaseRound<ApplicationQuery>;
+
+// 5. API Response Structures
 export interface RoundApplicationsQueryResponse {
-  rounds: RoundWithApplications[];
+  rounds: RoundWithApplicationsQuery[];
 }
 
 export interface ApplicationWithRound {
@@ -94,12 +110,12 @@ export interface ApplicationWithRound {
 }
 
 export interface ApplicationRoundQueryResponse {
-  application: ApplicationWithRound;
+  applications: ApplicationWithRound[];
 }
 
 export interface ManagerRolesResponse {
   rounds: Array<{
-    roles: Array<{
+    roundRoles: Array<{
       address: string;
     }>;
   }>;
