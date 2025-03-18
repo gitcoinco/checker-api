@@ -2,8 +2,10 @@ import { gql } from 'graphql-request';
 
 export const getRoundManager = gql`
   query RoundManager($chainId: Int!, $alloPoolId: String!) {
-    rounds(where: { chainId: { _eq: $chainId }, id: { _eq: $alloPoolId } }) {
-      roundRoles {
+    rounds(
+      filter: { chainId: { equalTo: $chainId }, id: { equalTo: $alloPoolId } }
+    ) {
+      roles {
         address
       }
     }
@@ -12,7 +14,9 @@ export const getRoundManager = gql`
 
 export const getRoundWithApplications = gql`
   query RoundApplications($chainId: Int!, $roundId: String!) {
-    rounds(where: { chainId: { _eq: $chainId }, id: { _eq: $roundId } }) {
+    rounds(
+      filter: { chainId: { equalTo: $chainId }, id: { equalTo: $roundId } }
+    ) {
       chainId
       id
       roundMetadata
@@ -23,7 +27,7 @@ export const getRoundWithApplications = gql`
         metadataCid
         status
         projectId
-        projects(where: { projectType: { _eq: "canonical" } }) {
+        project: canonicalProject {
           metadata
           metadataCid
         }
@@ -38,13 +42,7 @@ export const getApplicationWithRound = gql`
     $roundId: String!
     $applicationId: String!
   ) {
-    applications(
-      where: {
-        chainId: { _eq: $chainId }
-        roundId: { _eq: $roundId }
-        id: { _eq: $applicationId }
-      }
-    ) {
+    application(chainId: $chainId, roundId: $roundId, id: $applicationId) {
       metadata
       metadataCid
       round {
