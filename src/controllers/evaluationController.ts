@@ -108,27 +108,13 @@ export const recreateEvaluationQuestions = async (
     return;
   }
 
-  const [errorReset] = await catchError(
-    evaluationQuestionService.resetEvaluationQuestions(
-      chainId,
-      alloPoolId,
-      evaluationQuestions
-    )
+  await evaluationQuestionService.resetEvaluationQuestions(
+    chainId,
+    alloPoolId,
+    evaluationQuestions
   );
 
-  if (errorReset !== undefined) {
-    logger.error('Failed to reset evaluation questions', { errorReset });
-    res.status(500).json({ message: 'Failed to reset evaluation questions' });
-    return;
-  }
-
-  const [errorClean] = await catchError(evaluationService.cleanEvaluations());
-
-  if (errorClean !== undefined) {
-    logger.error('Failed to clean evaluations', { errorClean });
-    res.status(500).json({ message: 'Failed to clean evaluations' });
-    return;
-  }
+  await evaluationService.cleanEvaluations();
 
   res.status(200).json(evaluationQuestions);
 };
@@ -164,16 +150,14 @@ export const evaluateApplication = async (
     summaryInput,
   };
 
-  const [isAllowedError, isAllowed] = await catchError(
-    isPoolManager<CreateEvaluationParams>(
-      createEvaluationParams,
-      signature,
-      chainId,
-      alloPoolId
-    )
+  const isAllowed = await isPoolManager<CreateEvaluationParams>(
+    createEvaluationParams,
+    signature,
+    chainId,
+    alloPoolId
   );
 
-  if (isAllowedError !== undefined || isAllowed === undefined) {
+  if (!isAllowed) {
     logger.warn(
       `User with address: ${evaluator} is not allowed to evaluate application`
     );
@@ -317,17 +301,16 @@ export const triggerLLMEvaluation = async (
     questions,
   };
 
-  const [error] = await catchError(createLLMEvaluations([data]));
-  if (error !== undefined) {
+  try {
+    await createLLMEvaluations([data]);
+    res.status(200).json({ message: 'LLM evaluation triggered successfully' });
+  } catch (error) {
     logger.error('Failed to create evaluations:', error);
     res.status(500).json({
       message: 'Failed to create evaluations',
       error: error.message,
     });
   }
-
-  logger.info('LLM evaluation triggered successfully');
-  res.status(200).json({ message: 'LLM evaluation triggered successfully' });
 };
 
 const batchPromises = <T>(array: T[], batchSize: number): T[][] => {

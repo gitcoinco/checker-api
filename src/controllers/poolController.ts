@@ -186,17 +186,11 @@ const handlePoolEvaluationQuestions = async (
   pool: Pool,
   poolMetadata: IndexerRoundMetadata
 ): Promise<PromptEvaluationQuestions> => {
-  const [error, questions] = await catchError(
-    evaluationQuestionService.getEvaluationQuestionsByAlloPoolId(
+  const questions =
+    await evaluationQuestionService.getEvaluationQuestionsByAlloPoolId(
       pool.alloPoolId,
       pool.chainId
-    )
-  );
-
-  if (error !== undefined || questions === undefined) {
-    logger.error('Failed to get evaluation questions:', error);
-    throw new Error('Failed to get evaluation questions');
-  }
+    );
 
   if (questions.length > 0) {
     return questions.map(question => question.question);

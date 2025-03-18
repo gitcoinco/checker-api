@@ -87,6 +87,7 @@ class IndexerClient {
         getRoundManager,
         requestVariables
       );
+
       if (response.rounds.length === 0) {
         this.logger.warn(
           `No round found for poolId: ${alloPoolId} on chainId: ${chainId}`
@@ -96,7 +97,7 @@ class IndexerClient {
 
       const round = response.rounds[0];
 
-      if (round.roundRoles.length === 0) {
+      if (round.roles.length === 0) {
         this.logger.warn(
           `No manager found for poolId: ${alloPoolId} on chainId: ${chainId}`
         );
@@ -104,7 +105,7 @@ class IndexerClient {
       }
 
       this.logger.info(`Successfully fetched round manager`);
-      return round.roundRoles.map(role => role.address);
+      return round.roles.map(role => role.address);
     } catch (error) {
       this.logger.error(`Failed to fetch round manager: ${error.message}`, {
         error,
@@ -156,16 +157,7 @@ class IndexerClient {
         return null;
       }
 
-      const round = {
-        chainId: response.rounds[0].chainId,
-        id: response.rounds[0].id,
-        roundMetadata: response.rounds[0].roundMetadata,
-        roundMetadataCid: response.rounds[0].roundMetadataCid,
-        applications: response.rounds[0].applications.map(application => ({
-          ...application,
-          project: application.projects[0],
-        })),
-      };
+      const round = response.rounds[0];
 
       // Cache the result
       this.cache.set(cacheKey, round);
@@ -205,7 +197,7 @@ class IndexerClient {
         requestVariables
       );
 
-      const application = response.applications[0];
+      const application = response.application;
 
       if (application == null) {
         this.logger.warn(
@@ -213,7 +205,7 @@ class IndexerClient {
         );
         return null;
       }
-      return application;
+      return response.application;
     } catch (error) {
       this.logger.error(
         `Failed to fetch round with single application: ${error.message}`,

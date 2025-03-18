@@ -1,4 +1,3 @@
-// 1. Basic Types & Enums
 export type Address = `0x${string}`;
 
 export enum Status {
@@ -7,7 +6,6 @@ export enum Status {
   REJECTED = 'REJECTED',
 }
 
-// 2. Metadata & Supporting Interfaces
 export interface ApplicationMetadata {
   signature: string;
   application: {
@@ -54,48 +52,34 @@ export interface ProjectMetadata {
   projectTwitter?: string;
   userGithub?: string;
   projectGithub?: string;
+  // credentials: ProjectCredentials;
   owners: Array<{ address: string }>;
   createdAt: number;
   lastUpdated: number;
 }
 
-// 3. Base Interfaces (Used in Multiple Places)
-export interface BaseProject {
-  metadata: ProjectMetadata;
-  metadataCid: string;
-}
-
-export interface BaseApplication {
+export interface Application {
   id: string;
   metadata: ApplicationMetadata;
   metadataCid: string;
   status: Status;
   projectId: string;
+  project: {
+    metadata: ProjectMetadata;
+    metadataCid: string;
+  };
 }
 
-// 4. Extended Implementations
-export interface Application extends BaseApplication {
-  project: BaseProject;
-}
-
-export interface ApplicationQuery extends BaseApplication {
-  projects: BaseProject[];
-}
-
-export interface BaseRound<T extends BaseApplication> {
+export interface RoundWithApplications {
   chainId: number;
   id: string;
   roundMetadata: RoundMetadata;
   roundMetadataCid: string;
-  applications: T[];
+  applications: Application[];
 }
 
-export type RoundWithApplications = BaseRound<Application>;
-export type RoundWithApplicationsQuery = BaseRound<ApplicationQuery>;
-
-// 5. API Response Structures
 export interface RoundApplicationsQueryResponse {
-  rounds: RoundWithApplicationsQuery[];
+  rounds: RoundWithApplications[];
 }
 
 export interface ApplicationWithRound {
@@ -110,12 +94,12 @@ export interface ApplicationWithRound {
 }
 
 export interface ApplicationRoundQueryResponse {
-  applications: ApplicationWithRound[];
+  application: ApplicationWithRound;
 }
 
 export interface ManagerRolesResponse {
   rounds: Array<{
-    roundRoles: Array<{
+    roles: Array<{
       address: string;
     }>;
   }>;
