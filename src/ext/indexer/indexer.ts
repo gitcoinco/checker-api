@@ -163,7 +163,7 @@ class IndexerClient {
         roundMetadataCid: response.rounds[0].roundMetadataCid,
         applications: response.rounds[0].applications.map(application => ({
           ...application,
-          project: application.projects[0],
+          project: application.project,
         })),
       };
 

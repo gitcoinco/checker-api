@@ -79,7 +79,7 @@ export interface Application extends BaseApplication {
 }
 
 export interface ApplicationQuery extends BaseApplication {
-  projects: BaseProject[];
+  project: BaseProject;
 }
 
 export interface BaseRound<T extends BaseApplication> {

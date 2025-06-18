@@ -23,7 +23,7 @@ export const getRoundWithApplications = gql`
         metadataCid
         status
         projectId
-        projects(where: { projectType: { _eq: "canonical" } }) {
+        project {
           metadata
           metadataCid
         }
